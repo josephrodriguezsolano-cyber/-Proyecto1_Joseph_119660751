@@ -8,7 +8,7 @@ void Ventana::ejecutar() {
 	sf::Texture t;
 	sf::Sprite s;
 
-	t.loadFromFile("sfml.png");
+	t.loadFromFile("recursos/gemas/gem0.png");
 	s.setTexture(t);
 	s.setPosition(175, 130);
 
