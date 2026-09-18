@@ -15,7 +15,7 @@ tab_width=4
 tab_use_spaces=0
 explorer_path=.
 inherits_from=
-current_source=ExceptionManager.cpp
+current_source=Ventana.cpp
 path_char=\
 [source]
 path=main.cpp
@@ -23,11 +23,11 @@ cursor=9:4
 open=true
 [source]
 path=Ventana.cpp
-cursor=5:17
+cursor=11:46
 open=true
 [source]
 path=ExceptionManager.cpp
-cursor=0:0
+cursor=0:29
 open=true
 [source]
 path=TexturasBloques.cpp
@@ -55,7 +55,7 @@ cursor=0:0
 open=true
 [header]
 path=GameConstants.h
-cursor=0:0
+cursor=14:30
 open=true
 [header]
 path=TexturasBloques.h

@@ -1,28 +1,62 @@
 #include "Pieza.h"
 #include <cstdlib>
 
-namespace {
-    const Coord FORMAS[PIECE_TYPES][4] = {
-        { Coord(1, 0), Coord(1, 1), Coord(1, 2), Coord(1, 3) },
-        { Coord(0, 0), Coord(0, 1), Coord(1, 0), Coord(1, 1) },
-        { Coord(0, 1), Coord(1, 0), Coord(1, 1), Coord(1, 2) },
-        { Coord(0, 1), Coord(0, 2), Coord(1, 0), Coord(1, 1) },
-        { Coord(0, 0), Coord(0, 1), Coord(1, 1), Coord(1, 2) },
-        { Coord(0, 0), Coord(1, 0), Coord(1, 1), Coord(1, 2) },
-        { Coord(0, 2), Coord(1, 0), Coord(1, 1), Coord(1, 2) }
-    };
-    constexpr int FORMA_ANCHO = 4;
-}
+const int FORMAS[7][4][4] = {
+    {
+        { 0, 0, 0, 0 },
+        { 1, 1, 1, 1 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 }
+    },
+    {
+        { 1, 1, 0, 0 },
+        { 1, 1, 0, 0 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 }
+    },
+    {
+        { 0, 1, 0, 0 },
+        { 1, 1, 1, 0 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 }
+    },
+    {
+        { 0, 1, 1, 0 },
+        { 1, 1, 0, 0 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 }
+    },
+    {
+        { 1, 1, 0, 0 },
+        { 0, 1, 1, 0 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 }
+    },
+    {
+        { 1, 0, 0, 0 },
+        { 1, 1, 1, 0 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 }
+    },
+    {
+        { 0, 0, 1, 0 },
+        { 1, 1, 1, 0 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 }
+    }
+};
 
 Pieza::Pieza() : tipo(PIEZA_I) {
     for (int i = 0; i < 4; ++i)
-        forma[i] = FORMAS[tipo][i];
+        for (int j = 0; j < 4; ++j)
+            forma[i][j] = FORMAS[tipo][i][j];
     setPosicion(0, COLS / 2 - 2);
 }
 
 Pieza::Pieza(int t) : tipo(t) {
     for (int i = 0; i < 4; ++i)
-        forma[i] = FORMAS[tipo][i];
+        for (int j = 0; j < 4; ++j)
+            forma[i][j] = FORMAS[tipo][i][j];
     setPosicion(0, COLS / 2 - 2);
 }
 
@@ -52,17 +86,25 @@ void Pieza::mover(int df, int dc) {
 }
 
 void Pieza::rotar() {
-    for (int i = 0; i < 4; ++i) {
-        int nr = forma[i].col;
-        int nc = FORMA_ANCHO - 1 - forma[i].row;
-        forma[i] = Coord(nr, nc);
-    }
+    int rotada[4][4];
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            rotada[i][j] = forma[3 - j][i];
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            forma[i][j] = rotada[i][j];
     actualizarCeldas();
 }
 
 void Pieza::actualizarCeldas() {
-    for (int i = 0; i < 4; ++i) {
-        celdas[i].row = forma[i].row + posicion.row;
-        celdas[i].col = forma[i].col + posicion.col;
-    }
+	int indice = 0;
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			if (forma[i][j] == 1) {
+				celdas[indice].row = i + posicion.row;
+				celdas[indice].col = j + posicion.col;
+				++indice;
+			}
+		}
+	}
 }

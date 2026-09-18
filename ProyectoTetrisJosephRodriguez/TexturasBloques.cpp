@@ -9,6 +9,10 @@ void TexturasBloques::cargar() {
         }
         texturasPiezas[i].setSmooth(true);
     }
+    if (!texturaFondo.loadFromFile("recursos/gemas/BackGround.png")) {
+        throw ExceptionManager(ExceptionManager::TextureLoad, "recursos/gemas/BackGround.png");
+    }
+    texturaFondo.setSmooth(true);
 }
 
 const sf::Texture& TexturasBloques::getTextura(int tipo) const {
@@ -16,4 +20,8 @@ const sf::Texture& TexturasBloques::getTextura(int tipo) const {
         throw ExceptionManager(ExceptionManager::TextureLoad, "tipo de pieza invalido");
     }
     return texturasPiezas[tipo];
+}
+
+const sf::Texture& TexturasBloques::getFondo() const {
+    return texturaFondo;
 }

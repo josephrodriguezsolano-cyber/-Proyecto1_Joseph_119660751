@@ -13,6 +13,11 @@ public:
     bool dentro(int fila, int col) const;
     bool cabe(const Pieza& pieza) const;
     void fijar(const Pieza& pieza);
+    int getLineasEliminadas() const;
 private:
     int celdas[ROWS][COLS];
+    int lineasEliminadas;
+    bool filaCompleta(int fila) const;
+    void bajarFilas(int fila);
+    void eliminarLineas();
 };

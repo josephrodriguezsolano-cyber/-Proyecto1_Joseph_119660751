@@ -1,5 +1,4 @@
 #pragma once
-
 #include <SFML/Graphics.hpp>
 
 constexpr int ROWS = 20;
@@ -13,9 +12,9 @@ constexpr int PIEZA_Z = 4;
 constexpr int PIEZA_J = 5;
 constexpr int PIEZA_L = 6;
 
-constexpr float CELL_SIZE = 28.f;
-constexpr float BOARD_OFFSET_X = 40.f;
-constexpr float BOARD_OFFSET_Y = 20.f;
+constexpr float CELL_SIZE = 36.f;
+constexpr float BOARD_OFFSET_X = 232.f;
+constexpr float BOARD_OFFSET_Y = 72.f;
 constexpr float DROP_INTERVAL_BASE = 0.85f;
 constexpr float MAX_DT = 1.f / 60.f;
 constexpr int EMPTY_CELL = -1;

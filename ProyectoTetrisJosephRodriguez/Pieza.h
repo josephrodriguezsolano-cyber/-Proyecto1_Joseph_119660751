@@ -16,7 +16,7 @@ public:
     void rotar();
 private:
     int tipo;
-    Coord forma[4];
+    int forma[4][4];
     Coord celdas[4];
     Coord posicion;
     void actualizarCeldas();

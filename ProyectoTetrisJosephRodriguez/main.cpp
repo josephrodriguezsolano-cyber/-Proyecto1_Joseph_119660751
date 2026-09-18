@@ -6,6 +6,7 @@
 int main() {
 	try {
 		srand(static_cast<unsigned int>(time(nullptr)));
+		
 		Ventana ventana;
 		ventana.ejecutar();
 	}
@@ -13,6 +14,6 @@ int main() {
 		std::cout << "Error: " << e.what() << std::endl;
 		return -1;
 	}
+	
 	return 0;
 }
-
