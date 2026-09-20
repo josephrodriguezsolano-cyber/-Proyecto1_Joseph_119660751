@@ -24,6 +24,24 @@ constexpr int BONUS_DROP_SUAVE = 1;
 constexpr int BONUS_DROP_DURO = 2;
 constexpr int MAX_TABLA = 10;
 
+constexpr int LINEAS_POR_NIVEL = 10;
+constexpr float DROP_INTERVAL_MIN = 0.2f;
+constexpr float DROP_REDUCCION_NIVEL = 0.05f;
+
+constexpr const char* FONT_PATH = "recursos/fuente.ttf";
+
+constexpr float PREVIEW_CENTER_X = 116.f;
+constexpr float PREVIEW_CENTER_Y = 200.f;
+constexpr float PREVIEW_CELL_SIZE = 22.f;
+
+constexpr float TEXTO_PUNTUACION_X = 710.f;
+constexpr float TEXTO_PUNTUACION_Y = 200.f;
+constexpr float TEXTO_NIVEL_X = 710.f;
+constexpr float TEXTO_NIVEL_Y = 440.f;
+constexpr float TEXTO_LINEAS_X = 710.f;
+constexpr float TEXTO_LINEAS_Y = 680.f;
+constexpr float TEXTO_TAMANO = 26.f;
+
 constexpr int EVENTO_VELOCIDAD = 0;
 constexpr int EVENTO_BONUS = 1;
 constexpr int EVENTO_NIVEL = 2;

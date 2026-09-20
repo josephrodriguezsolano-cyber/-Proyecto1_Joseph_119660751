@@ -47,7 +47,7 @@ bool Tablero::cabe(const Pieza& pieza) const {
 	return true;
 }
 
-void Tablero::fijar(const Pieza& pieza) {
+int Tablero::fijar(const Pieza& pieza) {
 	const Coord* celdasPieza = pieza.getCeldas();
 	
 	for (int i = 0; i < 4; ++i) {
@@ -56,7 +56,9 @@ void Tablero::fijar(const Pieza& pieza) {
 		celdas[fila][col] = pieza.getTipo();
 	}
 	
-	eliminarLineas();
+	int eliminadas = eliminarLineas();
+	lineasEliminadas += eliminadas;
+	return eliminadas;
 }
 
 int Tablero::getLineasEliminadas() const {
@@ -84,14 +86,16 @@ void Tablero::bajarFilas(int filaDesde) {
 	}
 }
 
-void Tablero::eliminarLineas() {
-	lineasEliminadas = 0;
+int Tablero::eliminarLineas() {
+	int contador = 0;
 	
 	for (int f = ROWS - 1; f >= 0; --f) {
 		if (filaCompleta(f)) {
 			bajarFilas(f);
 			++f;
-			++lineasEliminadas;
+			++contador;
 		}
 	}
+	
+	return contador;
 }
