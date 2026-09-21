@@ -41,6 +41,15 @@ constexpr float TEXTO_NIVEL_Y = 440.f;
 constexpr float TEXTO_LINEAS_X = 710.f;
 constexpr float TEXTO_LINEAS_Y = 680.f;
 constexpr float TEXTO_TAMANO = 26.f;
+constexpr float TEXTO_ETIQUETA_TAMANO = 16.f;
+constexpr float TEXTO_ETIQUETA_OFFSET_Y = 54.f;
+constexpr float TEXTO_CONTROLES_X = 710.f;
+constexpr float TEXTO_CONTROLES_Y = 846.f;
+constexpr float TEXTO_CONTROLES_TAMANO = 15.f;
+
+constexpr float HOLD_PIECE_CENTER_X = 116.f;
+constexpr float HOLD_PIECE_CENTER_Y = 100.f;
+constexpr int PUNTOS_BONUS_EVENTO = 500;
 
 constexpr int EVENTO_VELOCIDAD = 0;
 constexpr int EVENTO_BONUS = 1;
@@ -56,3 +65,14 @@ constexpr int MOV_ROTAR = 3;
 constexpr int MOV_BAJAR = 4;
 constexpr int MOV_FIJAR = 5;
 constexpr int MOV_HOLD = 6;
+
+constexpr int ESTADO_MENU_JUGADOR = 0;
+constexpr int ESTADO_JUGANDO = 1;
+
+constexpr float MENU_CENTRO_X = BOARD_OFFSET_X + COLS * CELL_SIZE / 2.f;
+constexpr float MENU_INICIO_Y = BOARD_OFFSET_Y + 60.f;
+constexpr float MENU_TITULO_TAMANO = 42.f;
+constexpr float MENU_OPCION_TAMANO = 22.f;
+constexpr float MENU_NOMBRE_TAMANO = 26.f;
+constexpr float MENU_DETALLE_TAMANO = 16.f;
+constexpr int MENU_NOMBRE_MAX = 12;

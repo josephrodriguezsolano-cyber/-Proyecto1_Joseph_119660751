@@ -1,9 +1,14 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <string>
 #include "TexturasBloques.h"
 #include "Tablero.h"
 #include "Pieza.h"
+#include "PilaHold.h"
+#include "ListaReplay.h"
+#include "ColaEventos.h"
+#include "GestorPuntajes.h"
 
 class Ventana {
 public:
@@ -14,26 +19,56 @@ private:
     Tablero tablero;
     Pieza piezaActual;
     Pieza piezaSiguiente;
+    PilaHold pilaHold;
+    ListaReplay listaReplay;
+    ColaEventos colaEventos;
+    GestorPuntajes gestorPuntajes;
+    EstadoReplay actualReplay;
     sf::Font fuente;
     bool juegoTerminado;
+    bool enReplay;
+    bool pausado;
+    bool swapUsado;
+    bool partidaGuardada;
     float intervaloCaida;
+    float tiempoPartida;
+    int estado;
+    int opcionMenu;
+    int modoMenu;
+    int indiceJugadorMenu;
+    std::string nombreEntrada;
     int puntaje;
     int nivel;
     int lineasTotales;
+    int rotaciones;
+    int rotacionesHold;
     void bajarPieza();
     void fijarPieza();
     void generarPieza();
     void caidaRapida();
     void moverPieza(int df, int dc);
     void rotarPieza();
+    void usarHold();
     void actualizarNivel();
+    void registrarMovimiento(int mov);
+    EstadoReplay capturarEstado(int mov) const;
+    void restaurarEstado(const EstadoReplay& estado);
+    void deshacer();
+    void rehacer();
+    void reiniciarPartida();
+    void iniciarJuego(const std::string& nombre);
+    void procesarEvento(int tipo);
+    std::string nombreMovimiento(int mov) const;
     void dibujarTablero(sf::RenderWindow& w);
     void dibujarFondo(sf::RenderWindow& w);
     void dibujarPieza(sf::RenderWindow& w);
     void dibujarCelda(sf::RenderWindow& w, int fila, int col, int tipo);
     void dibujarGema(sf::RenderWindow& w, float x, float y, float tamano, int tipo);
     void dibujarTexto(sf::RenderWindow& w, const std::string& cadena, float x, float y, float tamano, sf::Color color);
+    void dibujarPiezaPreview(sf::RenderWindow& w, int tipo, int rotaciones, float cx, float cy, float tamano);
     void dibujarSiguiente(sf::RenderWindow& w);
+    void dibujarHold(sf::RenderWindow& w);
     void dibujarHud(sf::RenderWindow& w);
+    void dibujarMenu(sf::RenderWindow& w);
     void dibujarFin(sf::RenderWindow& w);
 };

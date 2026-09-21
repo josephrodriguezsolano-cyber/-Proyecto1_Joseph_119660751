@@ -5,7 +5,7 @@
 
 int main() {
 	try {
-		srand(static_cast<unsigned int>(time(nullptr)));
+		srand(static_cast<unsigned int>(time(0)));
 		
 		Ventana ventana;
 		ventana.ejecutar();
