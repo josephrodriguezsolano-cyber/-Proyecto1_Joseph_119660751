@@ -23,7 +23,7 @@ cursor=9:4
 open=true
 [source]
 path=Ventana.cpp
-cursor=11:46
+cursor=13:8
 open=true
 [source]
 path=ExceptionManager.cpp
@@ -43,7 +43,7 @@ cursor=0:0
 open=true
 [source]
 path=PilaHold.cpp
-cursor=0:0
+cursor=44:1
 open=true
 [source]
 path=ListaReplay.cpp

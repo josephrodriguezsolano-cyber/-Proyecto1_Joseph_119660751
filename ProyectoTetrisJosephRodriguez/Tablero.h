@@ -1,23 +1,22 @@
 #pragma once
 
 #include "GameConstants.h"
-
-class Pieza;
+#include "Pieza.h"
 
 class Tablero {
 public:
     Tablero();
-    void limpiar();
-    int getCelda(int fila, int col) const;
+    void limpiarTablero();
+    int getCelda(int fila, int col);
     void setCelda(int fila, int col, int tipo);
-    bool dentro(int fila, int col) const;
-    bool cabe(const Pieza& pieza) const;
-    int fijar(const Pieza& pieza);
-    int getLineasEliminadas() const;
+    bool estaDentro(int fila, int col);
+    bool puedeColocar(Pieza pieza);
+    int fijar(Pieza pieza);
+    int getLineasEliminadas();
 private:
     int celdas[ROWS][COLS];
     int lineasEliminadas;
-    bool filaCompleta(int fila) const;
+    bool esFilaCompleta(int fila);
     void bajarFilas(int fila);
     int eliminarLineas();
 };

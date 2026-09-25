@@ -1,12 +1,12 @@
 #include "ColaEventos.h"
 
-ColaEventos::ColaEventos()
-    : frente(NULL),
-      cantidad(0) {
+ColaEventos::ColaEventos() {
+    head = NULL;
+    cantidad = 0;
 }
 
 ColaEventos::~ColaEventos() {
-    vaciar();
+    vaciarCola();
 }
 
 void ColaEventos::programar(int tipo, float periodo, float tiempoActual) {
@@ -18,20 +18,20 @@ void ColaEventos::programar(int tipo, float periodo, float tiempoActual) {
 }
 
 bool ColaEventos::despachar(float tiempoActual, int& tipo) {
-    if (frente == NULL) {
+    if (head == NULL) {
         return false;
     }
-    if (frente->dato.tiempo > tiempoActual) {
+    if (head->dato.tiempo > tiempoActual) {
         return false;
     }
 
-    NodoEvento* aux = frente;
+    NodoEvento* aux = head;
     tipo = aux->dato.tipo;
     float periodo = aux->dato.periodo;
     float nuevoTiempo = aux->dato.tiempo + periodo;
-    frente = frente->sig;
+    head = head->sig;
     delete aux;
-    --cantidad;
+    cantidad--;
 
     DatoEvento dato;
     dato.tipo = tipo;
@@ -41,33 +41,33 @@ bool ColaEventos::despachar(float tiempoActual, int& tipo) {
     return true;
 }
 
-void ColaEventos::vaciar() {
-    NodoEvento* nodo = frente;
+void ColaEventos::vaciarCola() {
+    NodoEvento* nodo = head;
     while (nodo != NULL) {
         NodoEvento* aux = nodo->sig;
         delete nodo;
         nodo = aux;
     }
-    frente = NULL;
+    head = NULL;
     cantidad = 0;
 }
 
-int ColaEventos::getCantidad() const {
+int ColaEventos::getCantidad() {
     return cantidad;
 }
 
-void ColaEventos::insertarOrdenado(const DatoEvento& dato) {
-    NodoEvento* nuevo = new NodoEvento;
+void ColaEventos::insertarOrdenado(DatoEvento dato) {
+    NodoEvento* nuevo = new NodoEvento();
     nuevo->dato = dato;
     nuevo->sig = NULL;
 
-    if (frente == NULL) {
-        frente = nuevo;
-        ++cantidad;
+    if (head == NULL) {
+        head = nuevo;
+        cantidad++;
         return;
     }
 
-    NodoEvento* actual = frente;
+    NodoEvento* actual = head;
     NodoEvento* anterior = NULL;
     while (actual != NULL && actual->dato.tiempo <= dato.tiempo) {
         anterior = actual;
@@ -75,12 +75,12 @@ void ColaEventos::insertarOrdenado(const DatoEvento& dato) {
     }
 
     if (anterior == NULL) {
-        nuevo->sig = frente;
-        frente = nuevo;
+        nuevo->sig = head;
+        head = nuevo;
     }
     else {
         anterior->sig = nuevo;
         nuevo->sig = actual;
     }
-    ++cantidad;
+    cantidad++;
 }

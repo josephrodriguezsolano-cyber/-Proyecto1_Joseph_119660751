@@ -1,36 +1,36 @@
 #include "ListaReplay.h"
 
-ListaReplay::ListaReplay()
-    : cabeza(NULL),
-      cola(NULL),
-      actual(NULL),
-      tamano(0) {
+ListaReplay::ListaReplay() {
+    head = NULL;
+    cola = NULL;
+    actual = NULL;
+    tamano = 0;
 }
 
 ListaReplay::~ListaReplay() {
     reiniciar();
 }
 
-void ListaReplay::registrar(const EstadoReplay& estado) {
+void ListaReplay::registrar(EstadoReplay estado) {
     if (actual != NULL && actual->sig != NULL) {
         NodoReplay* rama = actual->sig;
         while (rama != NULL) {
             NodoReplay* aux = rama->sig;
             delete rama;
             rama = aux;
-            --tamano;
+            tamano--;
         }
         cola = actual;
         actual->sig = NULL;
     }
 
-    NodoReplay* nuevo = new NodoReplay;
+    NodoReplay* nuevo = new NodoReplay();
     nuevo->dato = estado;
     nuevo->ant = actual;
     nuevo->sig = NULL;
 
     if (actual == NULL) {
-        cabeza = nuevo;
+        head = nuevo;
     }
     else {
         actual->sig = nuevo;
@@ -38,7 +38,7 @@ void ListaReplay::registrar(const EstadoReplay& estado) {
 
     cola = nuevo;
     actual = nuevo;
-    ++tamano;
+    tamano++;
 }
 
 bool ListaReplay::deshacer(EstadoReplay& salida) {
@@ -80,18 +80,18 @@ bool ListaReplay::retroceder(EstadoReplay& salida) {
 }
 
 void ListaReplay::reiniciar() {
-    NodoReplay* nodo = cabeza;
+    NodoReplay* nodo = head;
     while (nodo != NULL) {
         NodoReplay* aux = nodo->sig;
         delete nodo;
         nodo = aux;
     }
-    cabeza = NULL;
+    head = NULL;
     cola = NULL;
     actual = NULL;
     tamano = 0;
 }
 
-int ListaReplay::getTamano() const {
+int ListaReplay::getTamano() {
     return tamano;
 }

@@ -20,7 +20,7 @@ Ventana::Ventana() {
 void Ventana::ejecutar() {
     sf::RenderWindow ventana(sf::VideoMode(830, 900), "Tetris");
     sf::Clock reloj;
-    float acumulado = 0.f;
+    float acumulado = 0.0f;
 
     while (ventana.isOpen()) {
         float delta = reloj.restart().asSeconds();
@@ -53,21 +53,31 @@ void Ventana::ejecutar() {
                 if (estado == ESTADO_MENU_JUGADOR) {
                     if (e.key.code == sf::Keyboard::Up || e.key.code == sf::Keyboard::Left) {
                         if (modoMenu == 0) {
-                            opcionMenu = (opcionMenu == 0) ? 1 : 0;
+                            if (opcionMenu == 0) {
+                                opcionMenu = 1;
+                            }
+                            else {
+                                opcionMenu = 0;
+                            }
                         }
                         else if (modoMenu == 2) {
                             if (indiceJugadorMenu > 0) {
-                                --indiceJugadorMenu;
+                                indiceJugadorMenu--;
                             }
                         }
                     }
                     else if (e.key.code == sf::Keyboard::Down || e.key.code == sf::Keyboard::Right) {
                         if (modoMenu == 0) {
-                            opcionMenu = (opcionMenu == 0) ? 1 : 0;
+                            if (opcionMenu == 0) {
+                                opcionMenu = 1;
+                            }
+                            else {
+                                opcionMenu = 0;
+                            }
                         }
                         else if (modoMenu == 2) {
                             if (indiceJugadorMenu < gestorPuntajes.getCantidad() - 1) {
-                                ++indiceJugadorMenu;
+                                indiceJugadorMenu++;
                             }
                         }
                     }
@@ -154,7 +164,7 @@ void Ventana::ejecutar() {
                         pausado = true;
                     }
                     else if (e.key.code == sf::Keyboard::T) {
-                        gestorPuntajes.alternarMetodo();
+                        gestorPuntajes.alternarOrdenamiento();
                     }
                     else if (e.key.code == sf::Keyboard::R) {
                         reiniciarPartida();
@@ -171,7 +181,7 @@ void Ventana::ejecutar() {
                 procesarEvento(tipoEvento);
             }
             if (acumulado >= intervaloCaida) {
-                acumulado = 0.f;
+                acumulado = 0.0f;
                 bajarPieza();
                 registrarMovimiento(MOV_BAJAR);
             }
@@ -196,7 +206,7 @@ void Ventana::ejecutar() {
 
 void Ventana::moverPieza(int df, int dc) {
     piezaActual.mover(df, dc);
-    if (!tablero.cabe(piezaActual)) {
+    if (!tablero.puedeColocar(piezaActual)) {
         piezaActual.mover(-df, -dc);
     }
 }
@@ -204,15 +214,15 @@ void Ventana::moverPieza(int df, int dc) {
 void Ventana::rotarPieza() {
     Pieza p = piezaActual;
     p.rotar();
-    if (tablero.cabe(p)) {
+    if (tablero.puedeColocar(p)) {
         piezaActual.rotar();
-        ++rotaciones;
+        rotaciones++;
     }
 }
 
 void Ventana::bajarPieza() {
     piezaActual.mover(1, 0);
-    if (!tablero.cabe(piezaActual)) {
+    if (!tablero.puedeColocar(piezaActual)) {
         piezaActual.mover(-1, 0);
         fijarPieza();
     }
@@ -220,13 +230,13 @@ void Ventana::bajarPieza() {
 
 void Ventana::caidaRapida() {
     int distancia = 0;
-    while (tablero.cabe(piezaActual)) {
+    while (tablero.puedeColocar(piezaActual)) {
         piezaActual.mover(1, 0);
-        ++distancia;
+        distancia++;
     }
     piezaActual.mover(-1, 0);
     if (distancia > 0) {
-        --distancia;
+        distancia--;
     }
     puntaje += distancia * BONUS_DROP_DURO;
     fijarPieza();
@@ -247,7 +257,7 @@ void Ventana::generarPieza() {
     piezaSiguiente = Pieza::crearAleatoria();
     rotaciones = 0;
     swapUsado = false;
-    if (!tablero.cabe(piezaActual)) {
+    if (!tablero.puedeColocar(piezaActual)) {
         juegoTerminado = true;
     }
 }
@@ -295,12 +305,12 @@ void Ventana::registrarMovimiento(int mov) {
     actualReplay = nuevo;
     if (nuevo.juegoTerminado && !partidaGuardada) {
         partidaGuardada = true;
-        gestorPuntajes.agendarLineas(nuevo.lineas);
+        gestorPuntajes.registrarLineas(nuevo.lineas);
         enReplay = true;
     }
 }
 
-EstadoReplay Ventana::capturarEstado(int mov) const {
+EstadoReplay Ventana::capturarEstado(int mov) {
     EstadoReplay est;
     est.movimiento = mov;
     est.tipoPieza = piezaActual.getTipo();
@@ -308,31 +318,36 @@ EstadoReplay Ventana::capturarEstado(int mov) const {
     est.rotaciones = rotaciones;
     est.rotacionesHold = rotacionesHold;
     est.piezaSiguienteTipo = piezaSiguiente.getTipo();
-    for (int f = 0; f < ROWS; ++f) {
-        for (int c = 0; c < COLS; ++c) {
+    for (int f = 0; f < ROWS; f++) {
+        for (int c = 0; c < COLS; c++) {
             est.celdas[f][c] = tablero.getCelda(f, c);
         }
     }
     est.puntaje = puntaje;
     est.nivel = nivel;
     est.lineas = lineasTotales;
-    est.piezaHoldTipo = pilaHold.isEmpty() ? EMPTY_CELL : pilaHold.top().getTipo();
+    if (pilaHold.isEmpty()) {
+        est.piezaHoldTipo = EMPTY_CELL;
+    }
+    else {
+        est.piezaHoldTipo = pilaHold.top().getTipo();
+    }
     est.swapUsado = swapUsado;
     est.juegoTerminado = juegoTerminado;
     return est;
 }
 
-void Ventana::restaurarEstado(const EstadoReplay& est) {
-    tablero.limpiar();
-    for (int f = 0; f < ROWS; ++f) {
-        for (int c = 0; c < COLS; ++c) {
+void Ventana::restaurarEstado(EstadoReplay est) {
+    tablero.limpiarTablero();
+    for (int f = 0; f < ROWS; f++) {
+        for (int c = 0; c < COLS; c++) {
             tablero.setCelda(f, c, est.celdas[f][c]);
         }
     }
 
     piezaActual = Pieza(est.tipoPieza);
     piezaActual.setPosicion(est.posicionPieza.row, est.posicionPieza.col);
-    for (int i = 0; i < est.rotaciones; ++i) {
+    for (int i = 0; i < est.rotaciones; i++) {
         piezaActual.rotar();
     }
 
@@ -343,7 +358,7 @@ void Ventana::restaurarEstado(const EstadoReplay& est) {
     }
     else {
         Pieza retenida(est.piezaHoldTipo);
-        for (int i = 0; i < est.rotacionesHold; ++i) {
+        for (int i = 0; i < est.rotacionesHold; i++) {
             retenida.rotar();
         }
         pilaHold.setTop(retenida);
@@ -376,10 +391,10 @@ void Ventana::rehacer() {
 }
 
 void Ventana::reiniciarPartida() {
-    tablero.limpiar();
+    tablero.limpiarTablero();
     pilaHold.clear();
     listaReplay.reiniciar();
-    colaEventos.vaciar();
+    colaEventos.vaciarCola();
 
     piezaActual = Pieza::crearAleatoria();
     piezaSiguiente = Pieza::crearAleatoria();
@@ -388,7 +403,7 @@ void Ventana::reiniciarPartida() {
     nivel = 1;
     lineasTotales = 0;
     intervaloCaida = DROP_INTERVAL_BASE;
-    tiempoPartida = 0.f;
+    tiempoPartida = 0.0f;
     rotaciones = 0;
     rotacionesHold = 0;
     juegoTerminado = false;
@@ -397,14 +412,14 @@ void Ventana::reiniciarPartida() {
     swapUsado = false;
     partidaGuardada = false;
 
-    colaEventos.programar(EVENTO_VELOCIDAD, INTERVALO_VELOCIDAD, 0.f);
-    colaEventos.programar(EVENTO_BONUS, INTERVALO_BONUS, 0.f);
-    colaEventos.programar(EVENTO_NIVEL, INTERVALO_NIVEL, 0.f);
+    colaEventos.programar(EVENTO_VELOCIDAD, INTERVALO_VELOCIDAD, 0.0f);
+    colaEventos.programar(EVENTO_BONUS, INTERVALO_BONUS, 0.0f);
+    colaEventos.programar(EVENTO_NIVEL, INTERVALO_NIVEL, 0.0f);
 
     registrarMovimiento(MOV_INICIO);
 }
 
-void Ventana::iniciarJuego(const std::string& nombre) {
+void Ventana::iniciarJuego(std::string nombre) {
     gestorPuntajes.establecerJugador(nombre);
     reiniciarPartida();
     estado = ESTADO_JUGANDO;
@@ -424,12 +439,12 @@ void Ventana::procesarEvento(int tipo) {
         puntaje += PUNTOS_BONUS_EVENTO;
     }
     else if (tipo == EVENTO_NIVEL) {
-        ++nivel;
+        nivel++;
         puntaje += PUNTOS_BONUS_EVENTO;
     }
 }
 
-std::string Ventana::nombreMovimiento(int mov) const {
+std::string Ventana::nombreMovimiento(int mov) {
     if (mov == MOV_INICIO) {
         return "INICIO";
     }
@@ -459,12 +474,15 @@ void Ventana::dibujarFondo(sf::RenderWindow& ventana) {
     sf::Sprite s(textura);
     float escalaX = static_cast<float>(ventana.getSize().x) / static_cast<float>(textura.getSize().x);
     float escalaY = static_cast<float>(ventana.getSize().y) / static_cast<float>(textura.getSize().y);
-    float escala = (escalaX > escalaY) ? escalaX : escalaY;
+    float escala = escalaX;
+    if (escalaY > escalaX) {
+        escala = escalaY;
+    }
     s.setScale(escala, escala);
     float ancho = static_cast<float>(textura.getSize().x) * escala;
     float alto = static_cast<float>(textura.getSize().y) * escala;
-    s.setPosition((static_cast<float>(ventana.getSize().x) - ancho) / 2.f,
-                  (static_cast<float>(ventana.getSize().y) - alto) / 2.f);
+    s.setPosition((static_cast<float>(ventana.getSize().x) - ancho) / 2.0f,
+                  (static_cast<float>(ventana.getSize().y) - alto) / 2.0f);
     ventana.draw(s);
 }
 
@@ -476,16 +494,22 @@ void Ventana::dibujarTablero(sf::RenderWindow& ventana) {
     fondo.setPosition(BOARD_OFFSET_X, BOARD_OFFSET_Y);
     ventana.draw(fondo);
 
-    for (int f = 0; f < ROWS; ++f) {
-        for (int c = 0; c < COLS; ++c) {
-            int tipo = enReplay ? actualReplay.celdas[f][c] : tablero.getCelda(f, c);
+    for (int f = 0; f < ROWS; f++) {
+        for (int c = 0; c < COLS; c++) {
+            int tipo;
+            if (enReplay) {
+                tipo = actualReplay.celdas[f][c];
+            }
+            else {
+                tipo = tablero.getCelda(f, c);
+            }
             if (tipo != EMPTY_CELL) {
                 dibujarCelda(ventana, f, c, tipo);
             }
             else {
                 sf::RectangleShape celda(sf::Vector2f(CELL_SIZE, CELL_SIZE));
                 celda.setFillColor(sf::Color(0, 0, 0, 0));
-                celda.setOutlineThickness(1.f);
+                celda.setOutlineThickness(1.0f);
                 celda.setOutlineColor(sf::Color(255, 255, 255, 30));
                 celda.setPosition(BOARD_OFFSET_X + c * CELL_SIZE, BOARD_OFFSET_Y + f * CELL_SIZE);
                 ventana.draw(celda);
@@ -498,17 +522,17 @@ void Ventana::dibujarPieza(sf::RenderWindow& ventana) {
     if (enReplay) {
         Pieza p(actualReplay.tipoPieza);
         p.setPosicion(actualReplay.posicionPieza.row, actualReplay.posicionPieza.col);
-        for (int i = 0; i < actualReplay.rotaciones; ++i) {
+        for (int i = 0; i < actualReplay.rotaciones; i++) {
             p.rotar();
         }
         const Coord* cs = p.getCeldas();
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 4; i++) {
             dibujarCelda(ventana, cs[i].row, cs[i].col, p.getTipo());
         }
     }
     else if (!juegoTerminado) {
         const Coord* cs = piezaActual.getCeldas();
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 4; i++) {
             dibujarCelda(ventana, cs[i].row, cs[i].col, piezaActual.getTipo());
         }
     }
@@ -528,12 +552,12 @@ void Ventana::dibujarGema(sf::RenderWindow& ventana, float x, float y, float tam
     ventana.draw(s);
 }
 
-void Ventana::dibujarTexto(sf::RenderWindow& ventana, const std::string& cadena,
+void Ventana::dibujarTexto(sf::RenderWindow& ventana, std::string cadena,
                            float x, float y, float tamano, sf::Color color) {
     sf::Text texto(cadena, fuente, static_cast<unsigned int>(tamano));
     texto.setFillColor(color);
     sf::FloatRect rect = texto.getLocalBounds();
-    texto.setOrigin(rect.left + rect.width / 2.f, rect.top + rect.height / 2.f);
+    texto.setOrigin(rect.left + rect.width / 2.0f, rect.top + rect.height / 2.0f);
     texto.setPosition(x, y);
     ventana.draw(texto);
 }
@@ -542,11 +566,11 @@ void Ventana::dibujarPiezaPreview(sf::RenderWindow& ventana, int tipo, int rotac
                                   float cx, float cy, float tamano) {
     Pieza p(tipo);
     p.setPosicion(0, 0);
-    for (int i = 0; i < rotaciones; ++i) {
+    for (int i = 0; i < rotaciones; i++) {
         p.rotar();
     }
     const Coord* cs = p.getCeldas();
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; i++) {
         float x = cx + (cs[i].col - 1.5f) * tamano;
         float y = cy + (cs[i].row - 1.5f) * tamano;
         dibujarGema(ventana, x, y, tamano, tipo);
@@ -554,7 +578,13 @@ void Ventana::dibujarPiezaPreview(sf::RenderWindow& ventana, int tipo, int rotac
 }
 
 void Ventana::dibujarSiguiente(sf::RenderWindow& ventana) {
-    int tipo = enReplay ? actualReplay.piezaSiguienteTipo : piezaSiguiente.getTipo();
+    int tipo;
+    if (enReplay) {
+        tipo = actualReplay.piezaSiguienteTipo;
+    }
+    else {
+        tipo = piezaSiguiente.getTipo();
+    }
     dibujarPiezaPreview(ventana, tipo, 0, PREVIEW_CENTER_X, PREVIEW_CENTER_Y, PREVIEW_CELL_SIZE);
 }
 
@@ -573,11 +603,21 @@ void Ventana::dibujarHold(sf::RenderWindow& ventana) {
 
 void Ventana::dibujarHud(sf::RenderWindow& ventana) {
     dibujarTexto(ventana, "JUGADOR: " + gestorPuntajes.getJugador(),
-                 TEXTO_PUNTUACION_X, TEXTO_CONTROLES_Y - 88.f, TEXTO_ETIQUETA_TAMANO, sf::Color(180, 200, 220));
+                 TEXTO_PUNTUACION_X, TEXTO_CONTROLES_Y - 88.0f, TEXTO_ETIQUETA_TAMANO, sf::Color(180, 200, 220));
 
-    int puntajeVista = enReplay ? actualReplay.puntaje : puntaje;
-    int nivelVista = enReplay ? actualReplay.nivel : nivel;
-    int lineasVista = enReplay ? actualReplay.lineas : lineasTotales;
+    int puntajeVista;
+    int nivelVista;
+    int lineasVista;
+    if (enReplay) {
+        puntajeVista = actualReplay.puntaje;
+        nivelVista = actualReplay.nivel;
+        lineasVista = actualReplay.lineas;
+    }
+    else {
+        puntajeVista = puntaje;
+        nivelVista = nivel;
+        lineasVista = lineasTotales;
+    }
 
     dibujarTexto(ventana, "HOLD", HOLD_PIECE_CENTER_X, HOLD_PIECE_CENTER_Y - TEXTO_ETIQUETA_OFFSET_Y,
                  TEXTO_ETIQUETA_TAMANO, sf::Color(200, 200, 200));
@@ -601,16 +641,16 @@ void Ventana::dibujarHud(sf::RenderWindow& ventana) {
 
     if (!enReplay) {
         dibujarTexto(ventana, "METODO ORDEN: " + std::to_string(gestorPuntajes.getMetodo() + 1),
-                     TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y - 26.f, TEXTO_CONTROLES_TAMANO, sf::Color(180, 200, 220));
+                     TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y - 26.0f, TEXTO_CONTROLES_TAMANO, sf::Color(180, 200, 220));
         dibujarTexto(ventana, "C HOLD   Z DESHACER   X REHACER   P PAUSA",
                      TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y, TEXTO_CONTROLES_TAMANO, sf::Color(160, 160, 160));
         dibujarTexto(ventana, "T ORDEN   R REINICIAR",
-                     TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y + 24.f, TEXTO_CONTROLES_TAMANO, sf::Color(160, 160, 160));
+                     TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y + 24.0f, TEXTO_CONTROLES_TAMANO, sf::Color(160, 160, 160));
     }
 
     if (pausado && !juegoTerminado) {
-        dibujarTexto(ventana, "PAUSA", BOARD_OFFSET_X + COLS * CELL_SIZE / 2.f,
-                     BOARD_OFFSET_Y + ROWS * CELL_SIZE / 2.f, TEXTO_TAMANO + 8.f, sf::Color::White);
+        dibujarTexto(ventana, "PAUSA", BOARD_OFFSET_X + COLS * CELL_SIZE / 2.0f,
+                     BOARD_OFFSET_Y + ROWS * CELL_SIZE / 2.0f, TEXTO_TAMANO + 8.0f, sf::Color::White);
     }
 }
 
@@ -622,80 +662,92 @@ void Ventana::dibujarMenu(sf::RenderWindow& ventana) {
 
     float cx = MENU_CENTRO_X;
     dibujarTexto(ventana, "TETRIS", cx, MENU_INICIO_Y, MENU_TITULO_TAMANO, sf::Color(255, 220, 100));
-    dibujarTexto(ventana, "MENU DE JUGADOR", cx, MENU_INICIO_Y + 60.f,
+    dibujarTexto(ventana, "MENU DE JUGADOR", cx, MENU_INICIO_Y + 60.0f,
                  MENU_OPCION_TAMANO, sf::Color(200, 220, 255));
 
     if (modoMenu == 1) {
-        dibujarTexto(ventana, "NUEVO JUGADOR", cx, MENU_INICIO_Y + 150.f,
+        dibujarTexto(ventana, "NUEVO JUGADOR", cx, MENU_INICIO_Y + 150.0f,
                      MENU_OPCION_TAMANO, sf::Color::White);
-        dibujarTexto(ventana, "NOMBRE: " + nombreEntrada + "|", cx, MENU_INICIO_Y + 205.f,
+        dibujarTexto(ventana, "NOMBRE: " + nombreEntrada + "|", cx, MENU_INICIO_Y + 205.0f,
                      MENU_NOMBRE_TAMANO, sf::Color::White);
         dibujarTexto(ventana, "ESCRIBE TU NOMBRE   ENTER: CONFIRMAR   ESC: VOLVER",
-                     cx, MENU_INICIO_Y + 260.f, MENU_DETALLE_TAMANO, sf::Color(180, 180, 180));
+                     cx, MENU_INICIO_Y + 260.0f, MENU_DETALLE_TAMANO, sf::Color(180, 180, 180));
     }
     else if (modoMenu == 2) {
-        dibujarTexto(ventana, "JUGADORES REGISTRADOS", cx, MENU_INICIO_Y + 150.f,
+        dibujarTexto(ventana, "JUGADORES REGISTRADOS", cx, MENU_INICIO_Y + 150.0f,
                      MENU_OPCION_TAMANO, sf::Color::White);
         int inicioLista = static_cast<int>(MENU_INICIO_Y) + 210;
-        for (int i = 0; i < gestorPuntajes.getCantidad() && i < MAX_TABLA; ++i) {
-            std::string fila = (i == indiceJugadorMenu) ? ">> " : "   ";
+        for (int i = 0; i < gestorPuntajes.getCantidad() && i < MAX_TABLA; i++) {
+            std::string fila = "   ";
+            if (i == indiceJugadorMenu) {
+                fila = ">> ";
+            }
             fila += std::to_string(i + 1) + ". " + gestorPuntajes.getNombreJugador(i)
                     + "   LINEAS " + std::to_string(gestorPuntajes.getLineasJugador(i));
-            sf::Color color = (i == indiceJugadorMenu) ? sf::Color(255, 220, 100) : sf::Color::White;
-            dibujarTexto(ventana, fila, cx, inicioLista + i * 34.f, 18.f, color);
+            sf::Color color = sf::Color::White;
+            if (i == indiceJugadorMenu) {
+                color = sf::Color(255, 220, 100);
+            }
+            dibujarTexto(ventana, fila, cx, inicioLista + i * 34.0f, 18.0f, color);
         }
-        float ayudaY = inicioLista + gestorPuntajes.getCantidad() * 34.f + 4.f;
+        float ayudaY = inicioLista + gestorPuntajes.getCantidad() * 34.0f + 4.0f;
         dibujarTexto(ventana, "FLECHAS: ELEGIR   ENTER: JUGAR   ESC: VOLVER",
                      cx, ayudaY, MENU_DETALLE_TAMANO, sf::Color(180, 180, 180));
     }
     else {
-        float y = MENU_INICIO_Y + 150.f;
-        sf::Color opcion1 = (opcionMenu == 0) ? sf::Color(255, 220, 100) : sf::Color::White;
-        sf::Color opcion2 = (opcionMenu == 1) ? sf::Color(255, 220, 100) : sf::Color::White;
+        float y = MENU_INICIO_Y + 150.0f;
+        sf::Color opcion1 = sf::Color::White;
+        if (opcionMenu == 0) {
+            opcion1 = sf::Color(255, 220, 100);
+        }
+        sf::Color opcion2 = sf::Color::White;
+        if (opcionMenu == 1) {
+            opcion2 = sf::Color(255, 220, 100);
+        }
         dibujarTexto(ventana, "1. NUEVO JUGADOR", cx, y, MENU_OPCION_TAMANO, opcion1);
-        dibujarTexto(ventana, "2. JUGADOR EXISTENTE", cx, y + 55.f, MENU_OPCION_TAMANO, opcion2);
+        dibujarTexto(ventana, "2. JUGADOR EXISTENTE", cx, y + 55.0f, MENU_OPCION_TAMANO, opcion2);
         if (opcionMenu == 1 && gestorPuntajes.getCantidad() == 0) {
             dibujarTexto(ventana, "NO HAY JUGADORES REGISTRADOS",
-                         cx, y + 115.f, MENU_DETALLE_TAMANO, sf::Color(200, 100, 100));
+                         cx, y + 115.0f, MENU_DETALLE_TAMANO, sf::Color(200, 100, 100));
         }
         else {
             dibujarTexto(ventana, "FLECHAS: CAMBIAR   ENTER: CONFIRMAR   ESC: VOLVER",
-                         cx, y + 115.f, MENU_DETALLE_TAMANO, sf::Color(180, 180, 180));
+                         cx, y + 115.0f, MENU_DETALLE_TAMANO, sf::Color(180, 180, 180));
         }
     }
 }
 
 void Ventana::dibujarFin(sf::RenderWindow& ventana) {
-    float cx = BOARD_OFFSET_X + COLS * CELL_SIZE / 2.f;
+    float cx = BOARD_OFFSET_X + COLS * CELL_SIZE / 2.0f;
     sf::RectangleShape cubre(sf::Vector2f(COLS * CELL_SIZE, ROWS * CELL_SIZE));
     cubre.setFillColor(sf::Color(0, 0, 0, 170));
     cubre.setPosition(BOARD_OFFSET_X, BOARD_OFFSET_Y);
     ventana.draw(cubre);
 
-    dibujarTexto(ventana, "JUEGO TERMINADO", cx, BOARD_OFFSET_Y + 60.f,
-                 TEXTO_TAMANO + 8.f, sf::Color::White);
-    dibujarTexto(ventana, "REPLAY PASO A PASO", cx, BOARD_OFFSET_Y + 110.f,
+    dibujarTexto(ventana, "JUEGO TERMINADO", cx, BOARD_OFFSET_Y + 60.0f,
+                 TEXTO_TAMANO + 8.0f, sf::Color::White);
+    dibujarTexto(ventana, "REPLAY PASO A PASO", cx, BOARD_OFFSET_Y + 110.0f,
                  TEXTO_TAMANO, sf::Color(255, 220, 100));
     dibujarTexto(ventana, "MOVIMIENTO: " + nombreMovimiento(actualReplay.movimiento),
-                 cx, BOARD_OFFSET_Y + 155.f, TEXTO_ETIQUETA_TAMANO + 2.f, sf::Color(200, 220, 255));
+                 cx, BOARD_OFFSET_Y + 155.0f, TEXTO_ETIQUETA_TAMANO + 2.0f, sf::Color(200, 220, 255));
 
     std::string lineaEstado = "PUNTAJE " + std::to_string(actualReplay.puntaje)
                               + "   NIVEL " + std::to_string(actualReplay.nivel)
                               + "   LINEAS " + std::to_string(actualReplay.lineas);
-    dibujarTexto(ventana, lineaEstado, cx, BOARD_OFFSET_Y + 190.f,
-                 TEXTO_ETIQUETA_TAMANO + 2.f, sf::Color::White);
+    dibujarTexto(ventana, lineaEstado, cx, BOARD_OFFSET_Y + 190.0f,
+                 TEXTO_ETIQUETA_TAMANO + 2.0f, sf::Color::White);
 
     dibujarTexto(ventana, "IZQ/DER: PASO      R: REINICIAR",
-                 cx, BOARD_OFFSET_Y + 235.f, TEXTO_ETIQUETA_TAMANO, sf::Color(180, 180, 180));
+                 cx, BOARD_OFFSET_Y + 235.0f, TEXTO_ETIQUETA_TAMANO, sf::Color(180, 180, 180));
 
     dibujarTexto(ventana, "TOP 10   (METODO " + std::to_string(gestorPuntajes.getMetodo() + 1) + ")",
-                 cx, BOARD_OFFSET_Y + 290.f, TEXTO_TAMANO, sf::Color(255, 220, 100));
+                 cx, BOARD_OFFSET_Y + 290.0f, TEXTO_TAMANO, sf::Color(255, 220, 100));
 
     int inicio = static_cast<int>(BOARD_OFFSET_Y) + 330;
-    for (int i = 0; i < gestorPuntajes.getCantidad() && i < MAX_TABLA; ++i) {
+    for (int i = 0; i < gestorPuntajes.getCantidad() && i < MAX_TABLA; i++) {
         std::string fila = std::to_string(i + 1) + ".  " + gestorPuntajes.getNombreJugador(i)
                            + "   LINEAS " + std::to_string(gestorPuntajes.getLineasJugador(i));
-        dibujarTexto(ventana, fila, cx, inicio + i * 30.f,
-                     TEXTO_ETIQUETA_TAMANO + 2.f, sf::Color::White);
+        dibujarTexto(ventana, fila, cx, inicio + i * 30.0f,
+                     TEXTO_ETIQUETA_TAMANO + 2.0f, sf::Color::White);
     }
 }

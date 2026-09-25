@@ -2,12 +2,12 @@
 #include "ExceptionManager.h"
 #include <fstream>
 
-GestorPuntajes::GestorPuntajes()
-    : jugadorActual(""),
-      ultimoJugador(""),
-      cantidad(0),
-      metodo(0) {
-    for (int i = 0; i < MAX_TABLA; ++i) {
+GestorPuntajes::GestorPuntajes() {
+    jugadorActual = "";
+    ultimoJugador = "";
+    cantidad = 0;
+    metodo = 0;
+    for (int i = 0; i < MAX_TABLA; i++) {
         lineas[i] = 0;
         nombres[i] = "";
     }
@@ -29,7 +29,7 @@ void GestorPuntajes::cargar() {
     }
     cantidad = 0;
     while (cantidad < MAX_TABLA && archivo >> lineas[cantidad] >> nombres[cantidad]) {
-        ++cantidad;
+        cantidad++;
     }
     archivo.close();
 }
@@ -40,22 +40,22 @@ void GestorPuntajes::guardar() {
         throw ExceptionManager(ExceptionManager::FileLoad, "recursos/puntajes.txt");
     }
     archivo << "ultimo " << ultimoJugador << std::endl;
-    for (int i = 0; i < cantidad; ++i) {
+    for (int i = 0; i < cantidad; i++) {
         archivo << lineas[i] << " " << nombres[i] << std::endl;
     }
     archivo.close();
 }
 
-void GestorPuntajes::establecerJugador(const std::string& nombre) {
+void GestorPuntajes::establecerJugador(std::string nombre) {
     jugadorActual = nombre;
 }
 
-std::string GestorPuntajes::getJugador() const {
+std::string GestorPuntajes::getJugador() {
     return jugadorActual;
 }
 
-int GestorPuntajes::existeJugador(const std::string& nombre) const {
-    for (int i = 0; i < cantidad; ++i) {
+int GestorPuntajes::existeJugador(std::string nombre) {
+    for (int i = 0; i < cantidad; i++) {
         if (nombres[i] == nombre) {
             return i;
         }
@@ -63,8 +63,8 @@ int GestorPuntajes::existeJugador(const std::string& nombre) const {
     return -1;
 }
 
-int GestorPuntajes::getIndiceUltimoJugador() const {
-    for (int i = 0; i < cantidad; ++i) {
+int GestorPuntajes::getIndiceUltimoJugador() {
+    for (int i = 0; i < cantidad; i++) {
         if (nombres[i] == ultimoJugador) {
             return i;
         }
@@ -72,7 +72,7 @@ int GestorPuntajes::getIndiceUltimoJugador() const {
     return 0;
 }
 
-void GestorPuntajes::agendarLineas(int lineasCompletadas) {
+void GestorPuntajes::registrarLineas(int lineasCompletadas) {
     if (jugadorActual.empty()) {
         return;
     }
@@ -85,11 +85,11 @@ void GestorPuntajes::agendarLineas(int lineasCompletadas) {
     else if (cantidad < MAX_TABLA) {
         lineas[cantidad] = lineasCompletadas;
         nombres[cantidad] = jugadorActual;
-        ++cantidad;
+        cantidad++;
     }
     else {
         int minimo = 0;
-        for (int i = 1; i < cantidad; ++i) {
+        for (int i = 1; i < cantidad; i++) {
             if (lineas[i] < lineas[minimo]) {
                 minimo = i;
             }
@@ -110,7 +110,7 @@ void GestorPuntajes::agendarLineas(int lineasCompletadas) {
     guardar();
 }
 
-void GestorPuntajes::alternarMetodo() {
+void GestorPuntajes::alternarOrdenamiento() {
     if (metodo == 0) {
         metodo = 1;
         ordenarQuickSort(0, cantidad - 1);
@@ -121,22 +121,22 @@ void GestorPuntajes::alternarMetodo() {
     }
 }
 
-int GestorPuntajes::getMetodo() const {
+int GestorPuntajes::getMetodo() {
     return metodo;
 }
 
-int GestorPuntajes::getCantidad() const {
+int GestorPuntajes::getCantidad() {
     return cantidad;
 }
 
-int GestorPuntajes::getLineasJugador(int indice) const {
+int GestorPuntajes::getLineasJugador(int indice) {
     if (indice < 0 || indice >= cantidad) {
         return 0;
     }
     return lineas[indice];
 }
 
-const std::string& GestorPuntajes::getNombreJugador(int indice) const {
+std::string GestorPuntajes::getNombreJugador(int indice) {
     if (indice < 0 || indice >= cantidad) {
         return nombres[0];
     }
@@ -144,14 +144,14 @@ const std::string& GestorPuntajes::getNombreJugador(int indice) const {
 }
 
 void GestorPuntajes::ordenarPorInsercion() {
-    for (int i = 1; i < cantidad; ++i) {
+    for (int i = 1; i < cantidad; i++) {
         int valor = lineas[i];
         std::string nombre = nombres[i];
         int j = i - 1;
         while (j >= 0 && lineas[j] < valor) {
             lineas[j + 1] = lineas[j];
             nombres[j + 1] = nombres[j];
-            --j;
+            j--;
         }
         lineas[j + 1] = valor;
         nombres[j + 1] = nombre;
@@ -171,10 +171,10 @@ void GestorPuntajes::ordenarQuickSort(int inicio, int fin) {
 void GestorPuntajes::particion(int inicio, int fin, int& pivote) {
     int valorPivote = lineas[fin];
     int i = inicio;
-    for (int j = inicio; j < fin; ++j) {
+    for (int j = inicio; j < fin; j++) {
         if (lineas[j] >= valorPivote) {
             intercambiar(i, j);
-            ++i;
+            i++;
         }
     }
     intercambiar(i, fin);

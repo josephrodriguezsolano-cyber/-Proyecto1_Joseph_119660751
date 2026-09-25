@@ -6,27 +6,33 @@ struct DatoEvento {
     int tipo;
     float tiempo;
     float periodo;
-    DatoEvento() : tipo(0), tiempo(0.f), periodo(0.f) {}
+
+    DatoEvento() {
+        tipo = 0;
+        tiempo = 0.0f;
+        periodo = 0.0f;
+    }
 };
 
 struct NodoEvento {
     DatoEvento dato;
     NodoEvento* sig;
-    NodoEvento() : sig(NULL) {}
+
+    NodoEvento() {
+        sig = NULL;
+    }
 };
 
 class ColaEventos {
 public:
     ColaEventos();
     ~ColaEventos();
-    ColaEventos(const ColaEventos&) = delete;
-    ColaEventos& operator=(const ColaEventos&) = delete;
     void programar(int tipo, float periodo, float tiempoActual);
     bool despachar(float tiempoActual, int& tipo);
-    void vaciar();
-    int getCantidad() const;
+    void vaciarCola();
+    int getCantidad();
 private:
-    NodoEvento* frente;
+    NodoEvento* head;
     int cantidad;
-    void insertarOrdenado(const DatoEvento& dato);
+    void insertarOrdenado(DatoEvento dato);
 };

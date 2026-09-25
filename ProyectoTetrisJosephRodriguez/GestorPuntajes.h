@@ -7,20 +7,18 @@ class GestorPuntajes {
 public:
     GestorPuntajes();
     ~GestorPuntajes();
-    GestorPuntajes(const GestorPuntajes&) = delete;
-    GestorPuntajes& operator=(const GestorPuntajes&) = delete;
     void cargar();
     void guardar();
-    void establecerJugador(const std::string& nombre);
-    std::string getJugador() const;
-    int existeJugador(const std::string& nombre) const;
-    int getIndiceUltimoJugador() const;
-    void agendarLineas(int lineasCompletadas);
-    void alternarMetodo();
-    int getMetodo() const;
-    int getCantidad() const;
-    int getLineasJugador(int indice) const;
-    const std::string& getNombreJugador(int indice) const;
+    void establecerJugador(std::string nombre);
+    std::string getJugador();
+    int existeJugador(std::string nombre);
+    int getIndiceUltimoJugador();
+    void registrarLineas(int lineasCompletadas);
+    void alternarOrdenamiento();
+    int getMetodo();
+    int getCantidad();
+    int getLineasJugador(int indice);
+    std::string getNombreJugador(int indice);
 private:
     int lineas[MAX_TABLA];
     std::string nombres[MAX_TABLA];
