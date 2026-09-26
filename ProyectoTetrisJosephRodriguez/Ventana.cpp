@@ -253,8 +253,7 @@ void Ventana::fijarPieza() {
 }
 
 void Ventana::generarPieza() {
-    piezaActual = piezaSiguiente;
-    piezaSiguiente = Pieza::crearAleatoria();
+    piezaActual = colaPiezas.desencolar();
     rotaciones = 0;
     swapUsado = false;
     if (!tablero.puedeColocar(piezaActual)) {
@@ -317,7 +316,7 @@ EstadoReplay Ventana::capturarEstado(int mov) {
     est.posicionPieza = piezaActual.getPosicion();
     est.rotaciones = rotaciones;
     est.rotacionesHold = rotacionesHold;
-    est.piezaSiguienteTipo = piezaSiguiente.getTipo();
+    est.piezaSiguienteTipo = colaPiezas.consultarFrente().getTipo();
     for (int f = 0; f < ROWS; f++) {
         for (int c = 0; c < COLS; c++) {
             est.celdas[f][c] = tablero.getCelda(f, c);
@@ -350,8 +349,6 @@ void Ventana::restaurarEstado(EstadoReplay est) {
     for (int i = 0; i < est.rotaciones; i++) {
         piezaActual.rotar();
     }
-
-    piezaSiguiente = Pieza(est.piezaSiguienteTipo);
 
     if (est.piezaHoldTipo == EMPTY_CELL) {
         pilaHold.clear();
@@ -395,9 +392,9 @@ void Ventana::reiniciarPartida() {
     pilaHold.clear();
     listaReplay.reiniciar();
     colaEventos.vaciarCola();
+    colaPiezas.reiniciar();
 
-    piezaActual = Pieza::crearAleatoria();
-    piezaSiguiente = Pieza::crearAleatoria();
+    piezaActual = colaPiezas.desencolar();
 
     puntaje = 0;
     nivel = 1;
@@ -578,14 +575,19 @@ void Ventana::dibujarPiezaPreview(sf::RenderWindow& ventana, int tipo, int rotac
 }
 
 void Ventana::dibujarSiguiente(sf::RenderWindow& ventana) {
-    int tipo;
     if (enReplay) {
-        tipo = actualReplay.piezaSiguienteTipo;
+        dibujarPiezaPreview(ventana, actualReplay.piezaSiguienteTipo, 0,
+                            PREVIEW_CENTER_X, PREVIEW_CENTER_Y, PREVIEW_CELL_SIZE);
     }
     else {
-        tipo = piezaSiguiente.getTipo();
+        constexpr float ESPACIADO_PREVIEW = 80.f;
+        for (int i = 0; i < 3; i++) {
+            Pieza p = colaPiezas.consultarPorIndice(i);
+            float y = PREVIEW_CENTER_Y + i * ESPACIADO_PREVIEW;
+            dibujarPiezaPreview(ventana, p.getTipo(), 0,
+                                PREVIEW_CENTER_X, y, PREVIEW_CELL_SIZE);
+        }
     }
-    dibujarPiezaPreview(ventana, tipo, 0, PREVIEW_CENTER_X, PREVIEW_CENTER_Y, PREVIEW_CELL_SIZE);
 }
 
 void Ventana::dibujarHold(sf::RenderWindow& ventana) {

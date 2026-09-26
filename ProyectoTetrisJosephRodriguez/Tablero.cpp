@@ -8,31 +8,35 @@ Tablero::Tablero() {
 }
 
 Tablero::~Tablero() {
-    liberarMemoria();
-}
-
-void Tablero::liberarMemoria() {
-    NodoFila* actual = cabeza;
-    while (actual != NULL) {
-        NodoFila* aux = actual->sig;
-        delete actual;
-        actual = aux;
+    while (cabeza != NULL) {
+        NodoFila* aux = cabeza;
+        cabeza = cabeza->sig;
+        delete aux;
     }
-    cabeza = NULL;
 }
 
 void Tablero::limpiarTablero() {
-    liberarMemoria();
-    NodoFila* ultimo = NULL;
-    for (int f = 0; f < ROWS; f++) {
-        NodoFila* nuevo = new NodoFila();
-        if (cabeza == NULL) {
-            cabeza = nuevo;
-            ultimo = nuevo;
+    if (cabeza == NULL) {
+        NodoFila* ultimo = NULL;
+        for (int f = 0; f < ROWS; ++f) {
+            NodoFila* nuevo = new NodoFila();
+            if (cabeza == NULL) {
+                cabeza = nuevo;
+                ultimo = nuevo;
+            }
+            else {
+                ultimo->sig = nuevo;
+                ultimo = nuevo;
+            }
         }
-        else {
-            ultimo->sig = nuevo;
-            ultimo = nuevo;
+    }
+    else {
+        NodoFila* actual = cabeza;
+        while (actual != NULL) {
+            for (int c = 0; c < COLS; ++c) {
+                actual->celdas[c] = EMPTY_CELL;
+            }
+            actual = actual->sig;
         }
     }
 }
@@ -42,7 +46,7 @@ NodoFila* Tablero::obtenerNodoFila(int fila) {
         return NULL;
     }
     NodoFila* actual = cabeza;
-    for (int i = 0; i < fila && actual != NULL; i++) {
+    for (int i = 0; i < fila && actual != NULL; ++i) {
         actual = actual->sig;
     }
     return actual;
@@ -78,7 +82,7 @@ bool Tablero::estaDentro(int fila, int col) {
 bool Tablero::puedeColocar(Pieza pieza) {
     const Coord* celdasPieza = pieza.getCeldas();
     
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; ++i) {
         int fila = celdasPieza[i].row;
         int col = celdasPieza[i].col;
         
@@ -97,7 +101,7 @@ bool Tablero::puedeColocar(Pieza pieza) {
 int Tablero::fijar(Pieza pieza) {
     const Coord* celdasPieza = pieza.getCeldas();
     
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; ++i) {
         int fila = celdasPieza[i].row;
         int col = celdasPieza[i].col;
         if (estaDentro(fila, col)) {
@@ -118,7 +122,7 @@ bool Tablero::esFilaCompleta(NodoFila* nodo) {
     if (nodo == NULL) {
         return false;
     }
-    for (int c = 0; c < COLS; c++) {
+    for (int c = 0; c < COLS; ++c) {
         if (nodo->celdas[c] == EMPTY_CELL) {
             return false;
         }
@@ -144,7 +148,6 @@ int Tablero::eliminarLineas() {
             }
             delete aEliminar;
 
-            // Inserción en tiempo O(1) de una nueva fila vacía en la cabeza
             NodoFila* nuevaFila = new NodoFila();
             nuevaFila->sig = cabeza;
             cabeza = nuevaFila;

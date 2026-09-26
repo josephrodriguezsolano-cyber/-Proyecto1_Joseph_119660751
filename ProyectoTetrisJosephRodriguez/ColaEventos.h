@@ -7,20 +7,14 @@ struct DatoEvento {
     float tiempo;
     float periodo;
 
-    DatoEvento() {
-        tipo = 0;
-        tiempo = 0.0f;
-        periodo = 0.0f;
-    }
+    DatoEvento() : tipo(0), tiempo(0.0f), periodo(0.0f) {}
 };
 
 struct NodoEvento {
     DatoEvento dato;
     NodoEvento* sig;
 
-    NodoEvento() {
-        sig = NULL;
-    }
+    NodoEvento() : sig(NULL) {}
 };
 
 class ColaEventos {
@@ -32,7 +26,7 @@ public:
     void vaciarCola();
     int getCantidad();
 private:
-    NodoEvento* head;
+    NodoEvento* frente;
     int cantidad;
     void insertarOrdenado(DatoEvento dato);
 };

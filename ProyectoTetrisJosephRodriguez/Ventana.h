@@ -8,6 +8,7 @@
 #include "PilaHold.h"
 #include "ListaReplay.h"
 #include "ColaEventos.h"
+#include "ColaPiezas.h"
 #include "GestorPuntajes.h"
 
 class Ventana {
@@ -18,7 +19,7 @@ private:
     TexturasBloques texturas;
     Tablero tablero;
     Pieza piezaActual;
-    Pieza piezaSiguiente;
+    ColaPiezas colaPiezas;
     PilaHold pilaHold;
     ListaReplay listaReplay;
     ColaEventos colaEventos;
@@ -30,6 +31,9 @@ private:
     bool pausado;
     bool swapUsado;
     bool partidaGuardada;
+    bool mostrarModalFin;
+    bool autoReplay;
+    float tiempoAutoReplay;
     float intervaloCaida;
     float tiempoPartida;
     int estado;

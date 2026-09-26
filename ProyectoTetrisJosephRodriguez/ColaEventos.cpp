@@ -1,7 +1,7 @@
 #include "ColaEventos.h"
 
 ColaEventos::ColaEventos() {
-    head = NULL;
+    frente = NULL;
     cantidad = 0;
 }
 
@@ -18,18 +18,18 @@ void ColaEventos::programar(int tipo, float periodo, float tiempoActual) {
 }
 
 bool ColaEventos::despachar(float tiempoActual, int& tipo) {
-    if (head == NULL) {
+    if (frente == NULL) {
         return false;
     }
-    if (head->dato.tiempo > tiempoActual) {
+    if (frente->dato.tiempo > tiempoActual) {
         return false;
     }
 
-    NodoEvento* aux = head;
+    NodoEvento* aux = frente;
     tipo = aux->dato.tipo;
     float periodo = aux->dato.periodo;
     float nuevoTiempo = aux->dato.tiempo + periodo;
-    head = head->sig;
+    frente = frente->sig;
     delete aux;
     cantidad--;
 
@@ -42,13 +42,13 @@ bool ColaEventos::despachar(float tiempoActual, int& tipo) {
 }
 
 void ColaEventos::vaciarCola() {
-    NodoEvento* nodo = head;
+    NodoEvento* nodo = frente;
     while (nodo != NULL) {
         NodoEvento* aux = nodo->sig;
         delete nodo;
         nodo = aux;
     }
-    head = NULL;
+    frente = NULL;
     cantidad = 0;
 }
 
@@ -61,13 +61,13 @@ void ColaEventos::insertarOrdenado(DatoEvento dato) {
     nuevo->dato = dato;
     nuevo->sig = NULL;
 
-    if (head == NULL) {
-        head = nuevo;
+    if (frente == NULL) {
+        frente = nuevo;
         cantidad++;
         return;
     }
 
-    NodoEvento* actual = head;
+    NodoEvento* actual = frente;
     NodoEvento* anterior = NULL;
     while (actual != NULL && actual->dato.tiempo <= dato.tiempo) {
         anterior = actual;
@@ -75,8 +75,8 @@ void ColaEventos::insertarOrdenado(DatoEvento dato) {
     }
 
     if (anterior == NULL) {
-        nuevo->sig = head;
-        head = nuevo;
+        nuevo->sig = frente;
+        frente = nuevo;
     }
     else {
         anterior->sig = nuevo;

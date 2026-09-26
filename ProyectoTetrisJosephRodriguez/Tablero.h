@@ -7,9 +7,8 @@ struct NodoFila {
     int celdas[COLS];
     NodoFila* sig;
 
-    NodoFila() {
-        sig = NULL;
-        for (int c = 0; c < COLS; c++) {
+    NodoFila() : sig(NULL) {
+        for (int c = 0; c < COLS; ++c) {
             celdas[c] = EMPTY_CELL;
         }
     }
@@ -32,5 +31,4 @@ private:
     NodoFila* obtenerNodoFila(int fila);
     bool esFilaCompleta(NodoFila* nodo);
     int eliminarLineas();
-    void liberarMemoria();
 };

@@ -25,10 +25,7 @@ struct NodoReplay {
     NodoReplay* ant;
     NodoReplay* sig;
 
-    NodoReplay() {
-        ant = NULL;
-        sig = NULL;
-    }
+    NodoReplay() : ant(NULL), sig(NULL) {}
 };
 
 class ListaReplay {
@@ -42,10 +39,12 @@ public:
     void irAlFinal();
     bool avanzar(EstadoReplay& salida);
     bool retroceder(EstadoReplay& salida);
+    bool obtenerActual(EstadoReplay& salida) const;
+    int getIndiceActual() const;
     void reiniciar();
     int getTamano();
 private:
-    NodoReplay* head;
+    NodoReplay* cabeza;
     NodoReplay* cola;
     NodoReplay* actual;
     int tamano;

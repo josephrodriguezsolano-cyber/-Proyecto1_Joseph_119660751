@@ -1,7 +1,7 @@
 #include "ListaReplay.h"
 
 ListaReplay::ListaReplay() {
-    head = NULL;
+    cabeza = NULL;
     cola = NULL;
     actual = NULL;
     tamano = 0;
@@ -30,7 +30,7 @@ void ListaReplay::registrar(EstadoReplay estado) {
     nuevo->sig = NULL;
 
     if (actual == NULL) {
-        head = nuevo;
+        cabeza = nuevo;
     }
     else {
         actual->sig = nuevo;
@@ -60,15 +60,11 @@ bool ListaReplay::rehacer(EstadoReplay& salida) {
 }
 
 void ListaReplay::irAlInicio() {
-    while (actual != NULL && actual->ant != NULL) {
-        actual = actual->ant;
-    }
+    actual = cabeza;
 }
 
 void ListaReplay::irAlFinal() {
-    while (actual != NULL && actual->sig != NULL) {
-        actual = actual->sig;
-    }
+    actual = cola;
 }
 
 bool ListaReplay::avanzar(EstadoReplay& salida) {
@@ -79,14 +75,35 @@ bool ListaReplay::retroceder(EstadoReplay& salida) {
     return deshacer(salida);
 }
 
+bool ListaReplay::obtenerActual(EstadoReplay& salida) const {
+    if (actual == NULL) {
+        return false;
+    }
+    salida = actual->dato;
+    return true;
+}
+
+int ListaReplay::getIndiceActual() const {
+    int idx = 0;
+    NodoReplay* n = cabeza;
+    while (n != NULL) {
+        idx++;
+        if (n == actual) {
+            return idx;
+        }
+        n = n->sig;
+    }
+    return idx;
+}
+
 void ListaReplay::reiniciar() {
-    NodoReplay* nodo = head;
+    NodoReplay* nodo = cabeza;
     while (nodo != NULL) {
         NodoReplay* aux = nodo->sig;
         delete nodo;
         nodo = aux;
     }
-    head = NULL;
+    cabeza = NULL;
     cola = NULL;
     actual = NULL;
     tamano = 0;
