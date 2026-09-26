@@ -1,9 +1,11 @@
 #include "TexturasBloques.h"
 #include <string>
 
+using namespace std;
+
 void TexturasBloques::cargar() {
     for (int i = 0; i < PIECE_TYPES; ++i) {
-        std::string ruta = "recursos/gemas/gem" + std::to_string(i) + ".png";
+        string ruta = "recursos/gemas/gem" + to_string(i) + ".png";
         if (!texturasPiezas[i].loadFromFile(ruta)) {
             throw ExceptionManager(ExceptionManager::TextureLoad, ruta);
         }

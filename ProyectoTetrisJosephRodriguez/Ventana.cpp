@@ -3,6 +3,8 @@
 #include "ExceptionManager.h"
 #include <string>
 
+using namespace std;
+
 Ventana::Ventana() {
     texturas.cargar();
     if (!fuente.loadFromFile(FONT_PATH)) {
@@ -14,6 +16,9 @@ Ventana::Ventana() {
     indiceJugadorMenu = 0;
     nombreEntrada = "";
     juegoTerminado = false;
+    mostrarModalFin = true;
+    autoReplay = false;
+    tiempoAutoReplay = 0.0f;
     reiniciarPartida();
 }
 
@@ -106,16 +111,44 @@ void Ventana::ejecutar() {
                 }
                 else if (juegoTerminado) {
                     if (e.key.code == sf::Keyboard::Left) {
+                        autoReplay = false;
                         EstadoReplay est;
                         if (listaReplay.retroceder(est)) {
                             actualReplay = est;
                         }
                     }
                     else if (e.key.code == sf::Keyboard::Right) {
+                        autoReplay = false;
                         EstadoReplay est;
                         if (listaReplay.avanzar(est)) {
                             actualReplay = est;
                         }
+                    }
+                    else if (e.key.code == sf::Keyboard::Space) {
+                        if (!autoReplay) {
+                            if (listaReplay.getIndiceActual() >= listaReplay.getTamano()) {
+                                listaReplay.irAlInicio();
+                                listaReplay.obtenerActual(actualReplay);
+                            }
+                            autoReplay = true;
+                        }
+                        else {
+                            autoReplay = false;
+                        }
+                        tiempoAutoReplay = 0.0f;
+                    }
+                    else if (e.key.code == sf::Keyboard::Home || e.key.code == sf::Keyboard::I) {
+                        autoReplay = false;
+                        listaReplay.irAlInicio();
+                        listaReplay.obtenerActual(actualReplay);
+                    }
+                    else if (e.key.code == sf::Keyboard::End || e.key.code == sf::Keyboard::F) {
+                        autoReplay = false;
+                        listaReplay.irAlFinal();
+                        listaReplay.obtenerActual(actualReplay);
+                    }
+                    else if (e.key.code == sf::Keyboard::H) {
+                        mostrarModalFin = !mostrarModalFin;
                     }
                     else if (e.key.code == sf::Keyboard::R) {
                         reiniciarPartida();
@@ -184,6 +217,19 @@ void Ventana::ejecutar() {
                 acumulado = 0.0f;
                 bajarPieza();
                 registrarMovimiento(MOV_BAJAR);
+            }
+        }
+        else if (estado == ESTADO_JUGANDO && juegoTerminado && autoReplay) {
+            tiempoAutoReplay += delta;
+            if (tiempoAutoReplay >= 0.35f) {
+                tiempoAutoReplay = 0.0f;
+                EstadoReplay est;
+                if (listaReplay.avanzar(est)) {
+                    actualReplay = est;
+                }
+                else {
+                    autoReplay = false;
+                }
             }
         }
 
@@ -279,6 +325,9 @@ void Ventana::usarHold() {
         pilaHold.push(piezaActual);
         piezaActual = retenida;
         piezaActual.setPosicion(0, COLS / 2 - 2);
+        if (!tablero.puedeColocar(piezaActual)) {
+            juegoTerminado = true;
+        }
         int aux = rotacionesHold;
         rotacionesHold = rotaciones;
         rotaciones = aux;
@@ -306,6 +355,8 @@ void Ventana::registrarMovimiento(int mov) {
         partidaGuardada = true;
         gestorPuntajes.registrarLineas(nuevo.lineas);
         enReplay = true;
+        listaReplay.irAlInicio();
+        listaReplay.obtenerActual(actualReplay);
     }
 }
 
@@ -408,6 +459,9 @@ void Ventana::reiniciarPartida() {
     pausado = false;
     swapUsado = false;
     partidaGuardada = false;
+    mostrarModalFin = true;
+    autoReplay = false;
+    tiempoAutoReplay = 0.0f;
 
     colaEventos.programar(EVENTO_VELOCIDAD, INTERVALO_VELOCIDAD, 0.0f);
     colaEventos.programar(EVENTO_BONUS, INTERVALO_BONUS, 0.0f);
@@ -416,7 +470,7 @@ void Ventana::reiniciarPartida() {
     registrarMovimiento(MOV_INICIO);
 }
 
-void Ventana::iniciarJuego(std::string nombre) {
+void Ventana::iniciarJuego(string nombre) {
     gestorPuntajes.establecerJugador(nombre);
     reiniciarPartida();
     estado = ESTADO_JUGANDO;
@@ -441,7 +495,7 @@ void Ventana::procesarEvento(int tipo) {
     }
 }
 
-std::string Ventana::nombreMovimiento(int mov) {
+string Ventana::nombreMovimiento(int mov) {
     if (mov == MOV_INICIO) {
         return "INICIO";
     }
@@ -549,7 +603,7 @@ void Ventana::dibujarGema(sf::RenderWindow& ventana, float x, float y, float tam
     ventana.draw(s);
 }
 
-void Ventana::dibujarTexto(sf::RenderWindow& ventana, std::string cadena,
+void Ventana::dibujarTexto(sf::RenderWindow& ventana, string cadena,
                            float x, float y, float tamano, sf::Color color) {
     sf::Text texto(cadena, fuente, static_cast<unsigned int>(tamano));
     texto.setFillColor(color);
@@ -630,19 +684,19 @@ void Ventana::dibujarHud(sf::RenderWindow& ventana) {
 
     dibujarTexto(ventana, "PUNTAJE", TEXTO_PUNTUACION_X, TEXTO_PUNTUACION_Y - TEXTO_ETIQUETA_OFFSET_Y,
                  TEXTO_ETIQUETA_TAMANO, sf::Color(200, 200, 200));
-    dibujarTexto(ventana, std::to_string(puntajeVista),
+    dibujarTexto(ventana, to_string(puntajeVista),
                  TEXTO_PUNTUACION_X, TEXTO_PUNTUACION_Y, TEXTO_TAMANO, sf::Color::White);
     dibujarTexto(ventana, "NIVEL", TEXTO_NIVEL_X, TEXTO_NIVEL_Y - TEXTO_ETIQUETA_OFFSET_Y,
                  TEXTO_ETIQUETA_TAMANO, sf::Color(200, 200, 200));
-    dibujarTexto(ventana, std::to_string(nivelVista),
+    dibujarTexto(ventana, to_string(nivelVista),
                  TEXTO_NIVEL_X, TEXTO_NIVEL_Y, TEXTO_TAMANO, sf::Color::White);
     dibujarTexto(ventana, "LINEAS", TEXTO_LINEAS_X, TEXTO_LINEAS_Y - TEXTO_ETIQUETA_OFFSET_Y,
                  TEXTO_ETIQUETA_TAMANO, sf::Color(200, 200, 200));
-    dibujarTexto(ventana, std::to_string(lineasVista),
+    dibujarTexto(ventana, to_string(lineasVista),
                  TEXTO_LINEAS_X, TEXTO_LINEAS_Y, TEXTO_TAMANO, sf::Color::White);
 
     if (!enReplay) {
-        dibujarTexto(ventana, "METODO ORDEN: " + std::to_string(gestorPuntajes.getMetodo() + 1),
+        dibujarTexto(ventana, "METODO ORDEN: " + to_string(gestorPuntajes.getMetodo() + 1),
                      TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y - 26.0f, TEXTO_CONTROLES_TAMANO, sf::Color(180, 200, 220));
         dibujarTexto(ventana, "C HOLD   Z DESHACER   X REHACER   P PAUSA",
                      TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y, TEXTO_CONTROLES_TAMANO, sf::Color(160, 160, 160));
@@ -680,12 +734,12 @@ void Ventana::dibujarMenu(sf::RenderWindow& ventana) {
                      MENU_OPCION_TAMANO, sf::Color::White);
         int inicioLista = static_cast<int>(MENU_INICIO_Y) + 210;
         for (int i = 0; i < gestorPuntajes.getCantidad() && i < MAX_TABLA; i++) {
-            std::string fila = "   ";
+            string fila = "   ";
             if (i == indiceJugadorMenu) {
                 fila = ">> ";
             }
-            fila += std::to_string(i + 1) + ". " + gestorPuntajes.getNombreJugador(i)
-                    + "   LINEAS " + std::to_string(gestorPuntajes.getLineasJugador(i));
+            fila += to_string(i + 1) + ". " + gestorPuntajes.getNombreJugador(i)
+                    + "   LINEAS " + to_string(gestorPuntajes.getLineasJugador(i));
             sf::Color color = sf::Color::White;
             if (i == indiceJugadorMenu) {
                 color = sf::Color(255, 220, 100);
@@ -721,35 +775,63 @@ void Ventana::dibujarMenu(sf::RenderWindow& ventana) {
 
 void Ventana::dibujarFin(sf::RenderWindow& ventana) {
     float cx = BOARD_OFFSET_X + COLS * CELL_SIZE / 2.0f;
-    sf::RectangleShape cubre(sf::Vector2f(COLS * CELL_SIZE, ROWS * CELL_SIZE));
-    cubre.setFillColor(sf::Color(0, 0, 0, 170));
-    cubre.setPosition(BOARD_OFFSET_X, BOARD_OFFSET_Y);
-    ventana.draw(cubre);
 
-    dibujarTexto(ventana, "JUEGO TERMINADO", cx, BOARD_OFFSET_Y + 60.0f,
-                 TEXTO_TAMANO + 8.0f, sf::Color::White);
-    dibujarTexto(ventana, "REPLAY PASO A PASO", cx, BOARD_OFFSET_Y + 110.0f,
-                 TEXTO_TAMANO, sf::Color(255, 220, 100));
-    dibujarTexto(ventana, "MOVIMIENTO: " + nombreMovimiento(actualReplay.movimiento),
-                 cx, BOARD_OFFSET_Y + 155.0f, TEXTO_ETIQUETA_TAMANO + 2.0f, sf::Color(200, 220, 255));
+    if (mostrarModalFin) {
+        sf::RectangleShape cubre(sf::Vector2f(COLS * CELL_SIZE, ROWS * CELL_SIZE));
+        cubre.setFillColor(sf::Color(0, 0, 0, 160));
+        cubre.setPosition(BOARD_OFFSET_X, BOARD_OFFSET_Y);
+        ventana.draw(cubre);
 
-    std::string lineaEstado = "PUNTAJE " + std::to_string(actualReplay.puntaje)
-                              + "   NIVEL " + std::to_string(actualReplay.nivel)
-                              + "   LINEAS " + std::to_string(actualReplay.lineas);
-    dibujarTexto(ventana, lineaEstado, cx, BOARD_OFFSET_Y + 190.0f,
-                 TEXTO_ETIQUETA_TAMANO + 2.0f, sf::Color::White);
+        dibujarTexto(ventana, "JUEGO TERMINADO", cx, BOARD_OFFSET_Y + 45.0f,
+                     TEXTO_TAMANO + 6.0f, sf::Color::White);
+        dibujarTexto(ventana, "REPLAY PASO A PASO", cx, BOARD_OFFSET_Y + 90.0f,
+                     TEXTO_TAMANO - 2.0f, sf::Color(255, 220, 100));
 
-    dibujarTexto(ventana, "IZQ/DER: PASO      R: REINICIAR",
-                 cx, BOARD_OFFSET_Y + 235.0f, TEXTO_ETIQUETA_TAMANO, sf::Color(180, 180, 180));
+        string infoPaso = "PASO " + to_string(listaReplay.getIndiceActual())
+                             + " / " + to_string(listaReplay.getTamano())
+                             + " (" + nombreMovimiento(actualReplay.movimiento) + ")";
+        dibujarTexto(ventana, infoPaso, cx, BOARD_OFFSET_Y + 128.0f,
+                     TEXTO_ETIQUETA_TAMANO + 1.0f, sf::Color(200, 220, 255));
 
-    dibujarTexto(ventana, "TOP 10   (METODO " + std::to_string(gestorPuntajes.getMetodo() + 1) + ")",
-                 cx, BOARD_OFFSET_Y + 290.0f, TEXTO_TAMANO, sf::Color(255, 220, 100));
+        string lineaEstado = "PUNTAJE: " + to_string(actualReplay.puntaje)
+                                + "  NIVEL: " + to_string(actualReplay.nivel)
+                                + "  LINEAS: " + to_string(actualReplay.lineas);
+        dibujarTexto(ventana, lineaEstado, cx, BOARD_OFFSET_Y + 160.0f,
+                     TEXTO_ETIQUETA_TAMANO - 1.0f, sf::Color::White);
 
-    int inicio = static_cast<int>(BOARD_OFFSET_Y) + 330;
-    for (int i = 0; i < gestorPuntajes.getCantidad() && i < MAX_TABLA; i++) {
-        std::string fila = std::to_string(i + 1) + ".  " + gestorPuntajes.getNombreJugador(i)
-                           + "   LINEAS " + std::to_string(gestorPuntajes.getLineasJugador(i));
-        dibujarTexto(ventana, fila, cx, inicio + i * 30.0f,
-                     TEXTO_ETIQUETA_TAMANO + 2.0f, sf::Color::White);
+        string textoAuto = autoReplay ? "[PAUSAR]" : "[REPRODUCIR]";
+        dibujarTexto(ventana, "ESPACIO: " + textoAuto + "   H: OCULTAR PANEL",
+                     cx, BOARD_OFFSET_Y + 195.0f, TEXTO_ETIQUETA_TAMANO, sf::Color(180, 220, 255));
+        dibujarTexto(ventana, "IZQ/DER: PASO   I: INICIO   R: REINICIAR",
+                     cx, BOARD_OFFSET_Y + 225.0f, TEXTO_ETIQUETA_TAMANO - 1.0f, sf::Color(180, 180, 180));
+
+        dibujarTexto(ventana, "TOP 10   (METODO " + to_string(gestorPuntajes.getMetodo() + 1) + ")",
+                     cx, BOARD_OFFSET_Y + 275.0f, TEXTO_TAMANO - 2.0f, sf::Color(255, 220, 100));
+
+        int inicio = static_cast<int>(BOARD_OFFSET_Y) + 315;
+        for (int i = 0; i < gestorPuntajes.getCantidad() && i < MAX_TABLA; i++) {
+            string fila = to_string(i + 1) + ".  " + gestorPuntajes.getNombreJugador(i)
+                               + "   LINEAS " + to_string(gestorPuntajes.getLineasJugador(i));
+            dibujarTexto(ventana, fila, cx, inicio + i * 30.0f,
+                         TEXTO_ETIQUETA_TAMANO + 1.0f, sf::Color::White);
+        }
+    }
+    else {
+        sf::RectangleShape barra(sf::Vector2f(COLS * CELL_SIZE, 58.0f));
+        barra.setFillColor(sf::Color(10, 10, 20, 220));
+        barra.setOutlineThickness(1.0f);
+        barra.setOutlineColor(sf::Color(255, 220, 100, 180));
+        barra.setPosition(BOARD_OFFSET_X, BOARD_OFFSET_Y + ROWS * CELL_SIZE - 58.0f);
+        ventana.draw(barra);
+
+        string infoPaso = "PASO " + to_string(listaReplay.getIndiceActual())
+                             + " / " + to_string(listaReplay.getTamano())
+                             + " (" + nombreMovimiento(actualReplay.movimiento) + ") "
+                             + (autoReplay ? ">> AUTO" : "|| PAUSA");
+        dibujarTexto(ventana, infoPaso, cx, BOARD_OFFSET_Y + ROWS * CELL_SIZE - 44.0f,
+                     TEXTO_ETIQUETA_TAMANO, sf::Color(255, 220, 100));
+        dibujarTexto(ventana, "IZQ/DER: PASO  ESPACIO: AUTO  I: INICIO  H: TOP 10  R: NUEVA",
+                     cx, BOARD_OFFSET_Y + ROWS * CELL_SIZE - 20.0f,
+                     TEXTO_ETIQUETA_TAMANO - 3.0f, sf::Color::White);
     }
 }

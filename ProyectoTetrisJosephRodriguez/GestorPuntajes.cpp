@@ -2,6 +2,8 @@
 #include "ExceptionManager.h"
 #include <fstream>
 
+using namespace std;
+
 GestorPuntajes::GestorPuntajes() {
     jugadorActual = "";
     ultimoJugador = "";
@@ -18,11 +20,11 @@ GestorPuntajes::~GestorPuntajes() {
 }
 
 void GestorPuntajes::cargar() {
-    std::ifstream archivo("recursos/puntajes.txt");
+    ifstream archivo("recursos/puntajes.txt");
     if (!archivo.is_open()) {
         return;
     }
-    std::string etiqueta;
+    string etiqueta;
     archivo >> etiqueta;
     if (etiqueta == "ultimo") {
         archivo >> ultimoJugador;
@@ -35,26 +37,26 @@ void GestorPuntajes::cargar() {
 }
 
 void GestorPuntajes::guardar() {
-    std::ofstream archivo("recursos/puntajes.txt");
+    ofstream archivo("recursos/puntajes.txt");
     if (!archivo.is_open()) {
         throw ExceptionManager(ExceptionManager::FileLoad, "recursos/puntajes.txt");
     }
-    archivo << "ultimo " << ultimoJugador << std::endl;
+    archivo << "ultimo " << ultimoJugador << endl;
     for (int i = 0; i < cantidad; i++) {
-        archivo << lineas[i] << " " << nombres[i] << std::endl;
+        archivo << lineas[i] << " " << nombres[i] << endl;
     }
     archivo.close();
 }
 
-void GestorPuntajes::establecerJugador(std::string nombre) {
+void GestorPuntajes::establecerJugador(string nombre) {
     jugadorActual = nombre;
 }
 
-std::string GestorPuntajes::getJugador() {
+string GestorPuntajes::getJugador() {
     return jugadorActual;
 }
 
-int GestorPuntajes::existeJugador(std::string nombre) {
+int GestorPuntajes::existeJugador(string nombre) {
     for (int i = 0; i < cantidad; i++) {
         if (nombres[i] == nombre) {
             return i;
@@ -136,7 +138,7 @@ int GestorPuntajes::getLineasJugador(int indice) {
     return lineas[indice];
 }
 
-std::string GestorPuntajes::getNombreJugador(int indice) {
+string GestorPuntajes::getNombreJugador(int indice) {
     if (indice < 0 || indice >= cantidad) {
         return nombres[0];
     }
@@ -146,7 +148,7 @@ std::string GestorPuntajes::getNombreJugador(int indice) {
 void GestorPuntajes::ordenarPorInsercion() {
     for (int i = 1; i < cantidad; i++) {
         int valor = lineas[i];
-        std::string nombre = nombres[i];
+        string nombre = nombres[i];
         int j = i - 1;
         while (j >= 0 && lineas[j] < valor) {
             lineas[j + 1] = lineas[j];
@@ -185,7 +187,7 @@ void GestorPuntajes::intercambiar(int a, int b) {
     int auxLineas = lineas[a];
     lineas[a] = lineas[b];
     lineas[b] = auxLineas;
-    std::string auxNombre = nombres[a];
+    string auxNombre = nombres[a];
     nombres[a] = nombres[b];
     nombres[b] = auxNombre;
 }

@@ -1,6 +1,6 @@
 #include "ExceptionManager.h"
 
-ExceptionManager::ExceptionManager(Type t, const std::string& detail) {
+ExceptionManager::ExceptionManager(Type t, const string& detail) {
     if (t == TextureLoad) {
         message = "Failed to load texture: " + detail;
     }

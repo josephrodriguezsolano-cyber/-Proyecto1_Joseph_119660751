@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics.hpp>
 #include <string>
+
+using namespace std;
 #include "TexturasBloques.h"
 #include "Tablero.h"
 #include "Pieza.h"
@@ -40,7 +42,7 @@ private:
     int opcionMenu;
     int modoMenu;
     int indiceJugadorMenu;
-    std::string nombreEntrada;
+    string nombreEntrada;
     int puntaje;
     int nivel;
     int lineasTotales;
@@ -60,15 +62,15 @@ private:
     void deshacer();
     void rehacer();
     void reiniciarPartida();
-    void iniciarJuego(std::string nombre);
+    void iniciarJuego(string nombre);
     void procesarEvento(int tipo);
-    std::string nombreMovimiento(int mov);
+    string nombreMovimiento(int mov);
     void dibujarTablero(sf::RenderWindow& w);
     void dibujarFondo(sf::RenderWindow& w);
     void dibujarPieza(sf::RenderWindow& w);
     void dibujarCelda(sf::RenderWindow& w, int fila, int col, int tipo);
     void dibujarGema(sf::RenderWindow& w, float x, float y, float tamano, int tipo);
-    void dibujarTexto(sf::RenderWindow& w, std::string cadena, float x, float y, float tamano, sf::Color color);
+    void dibujarTexto(sf::RenderWindow& w, string cadena, float x, float y, float tamano, sf::Color color);
     void dibujarPiezaPreview(sf::RenderWindow& w, int tipo, int rotaciones, float cx, float cy, float tamano);
     void dibujarSiguiente(sf::RenderWindow& w);
     void dibujarHold(sf::RenderWindow& w);

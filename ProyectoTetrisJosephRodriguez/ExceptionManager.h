@@ -3,11 +3,13 @@
 #include <exception>
 #include <string>
 
-class ExceptionManager : public std::exception {
+using namespace std;
+
+class ExceptionManager : public exception {
 public:
     enum Type { TextureLoad, FontLoad, FileLoad };
-    ExceptionManager(Type t, const std::string& detail = "");
+    ExceptionManager(Type t, const string& detail = "");
     const char* what() const throw() override;
 private:
-    std::string message;
+    string message;
 };

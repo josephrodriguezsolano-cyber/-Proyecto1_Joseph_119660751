@@ -3,6 +3,8 @@
 #include <iostream>
 #include <ctime>
 
+using namespace std;
+
 int main() {
 	try {
 		srand(static_cast<unsigned int>(time(0)));
@@ -10,8 +12,8 @@ int main() {
 		Ventana ventana;
 		ventana.ejecutar();
 	}
-	catch (const std::exception& e) {
-		std::cout << "Error: " << e.what() << std::endl;
+	catch (const exception& e) {
+		cout << "Error: " << e.what() << endl;
 		return -1;
 	}
 	

@@ -3,27 +3,29 @@
 #include "GameConstants.h"
 #include <string>
 
+using namespace std;
+
 class GestorPuntajes {
 public:
     GestorPuntajes();
     ~GestorPuntajes();
     void cargar();
     void guardar();
-    void establecerJugador(std::string nombre);
-    std::string getJugador();
-    int existeJugador(std::string nombre);
+    void establecerJugador(string nombre);
+    string getJugador();
+    int existeJugador(string nombre);
     int getIndiceUltimoJugador();
     void registrarLineas(int lineasCompletadas);
     void alternarOrdenamiento();
     int getMetodo();
     int getCantidad();
     int getLineasJugador(int indice);
-    std::string getNombreJugador(int indice);
+    string getNombreJugador(int indice);
 private:
     int lineas[MAX_TABLA];
-    std::string nombres[MAX_TABLA];
-    std::string jugadorActual;
-    std::string ultimoJugador;
+    string nombres[MAX_TABLA];
+    string jugadorActual;
+    string ultimoJugador;
     int cantidad;
     int metodo;
     void ordenarPorInsercion();
