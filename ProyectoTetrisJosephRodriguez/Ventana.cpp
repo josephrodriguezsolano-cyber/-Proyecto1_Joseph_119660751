@@ -19,6 +19,13 @@ Ventana::Ventana() {
     mostrarModalFin = true;
     autoReplay = false;
     tiempoAutoReplay = 0.0f;
+    animandoLineas = false;
+    tiempoAnimacionLineas = 0.0f;
+    lineasAnimacion = 0;
+    opcionPausa = 0;
+    for (int f = 0; f < ROWS; ++f) {
+        filasAnimacion[f] = false;
+    }
     reiniciarPartida();
 }
 
@@ -155,68 +162,119 @@ void Ventana::ejecutar() {
                     }
                 }
                 else if (pausado) {
-                    if (e.key.code == sf::Keyboard::P) {
+                    if (e.key.code == sf::Keyboard::Escape) {
                         pausado = false;
                     }
-                    else if (e.key.code == sf::Keyboard::R) {
-                        reiniciarPartida();
+                    else if (e.key.code == sf::Keyboard::Up) {
+                        opcionPausa = (opcionPausa - 1 + 4) % 4;
+                    }
+                    else if (e.key.code == sf::Keyboard::Down) {
+                        opcionPausa = (opcionPausa + 1) % 4;
+                    }
+                    else if (e.key.code == sf::Keyboard::Return || e.key.code == sf::Keyboard::Space) {
+                        if (opcionPausa == 0) {
+                            pausado = false;
+                        }
+                        else if (opcionPausa == 1) {
+                            reiniciarPartida();
+                        }
+                        else if (opcionPausa == 2) {
+                            pausado = false;
+                            reiniciarPartida();
+                            estado = ESTADO_MENU_JUGADOR;
+                            modoMenu = 0;
+                        }
+                        else if (opcionPausa == 3) {
+                            ventana.close();
+                        }
                     }
                 }
                 else {
-                    if (e.key.code == sf::Keyboard::Left) {
-                        moverPieza(0, -1);
-                        registrarMovimiento(MOV_IZQUIERDA);
-                    }
-                    else if (e.key.code == sf::Keyboard::Right) {
-                        moverPieza(0, 1);
-                        registrarMovimiento(MOV_DERECHA);
-                    }
-                    else if (e.key.code == sf::Keyboard::Down) {
-                        bajarPieza();
-                        registrarMovimiento(MOV_BAJAR);
-                    }
-                    else if (e.key.code == sf::Keyboard::Up) {
-                        rotarPieza();
-                        registrarMovimiento(MOV_ROTAR);
-                    }
-                    else if (e.key.code == sf::Keyboard::Space) {
-                        caidaRapida();
-                        registrarMovimiento(MOV_FIJAR);
-                    }
-                    else if (e.key.code == sf::Keyboard::C) {
-                        usarHold();
-                        registrarMovimiento(MOV_HOLD);
-                    }
-                    else if (e.key.code == sf::Keyboard::Z) {
-                        deshacer();
-                    }
-                    else if (e.key.code == sf::Keyboard::X) {
-                        rehacer();
-                    }
-                    else if (e.key.code == sf::Keyboard::P) {
+                    if (e.key.code == sf::Keyboard::Escape) {
                         pausado = true;
+                        opcionPausa = 0;
                     }
-                    else if (e.key.code == sf::Keyboard::T) {
-                        gestorPuntajes.alternarOrdenamiento();
-                    }
-                    else if (e.key.code == sf::Keyboard::R) {
-                        reiniciarPartida();
+                    else if (!animandoLineas) {
+                        if (e.key.code == sf::Keyboard::Left) {
+                            moverPieza(0, -1);
+                            registrarMovimiento(MOV_IZQUIERDA);
+                        }
+                        else if (e.key.code == sf::Keyboard::Right) {
+                            moverPieza(0, 1);
+                            registrarMovimiento(MOV_DERECHA);
+                        }
+                        else if (e.key.code == sf::Keyboard::Down) {
+                            bajarPieza();
+                            if (!animandoLineas) {
+                                registrarMovimiento(MOV_BAJAR);
+                            }
+                        }
+                        else if (e.key.code == sf::Keyboard::Up) {
+                            rotarPieza();
+                            registrarMovimiento(MOV_ROTAR);
+                        }
+                        else if (e.key.code == sf::Keyboard::Space) {
+                            caidaRapida();
+                            if (!animandoLineas) {
+                                registrarMovimiento(MOV_FIJAR);
+                            }
+                        }
+                        else if (e.key.code == sf::Keyboard::C) {
+                            usarHold();
+                            registrarMovimiento(MOV_HOLD);
+                        }
+                        else if (e.key.code == sf::Keyboard::Z) {
+                            deshacer();
+                        }
+                        else if (e.key.code == sf::Keyboard::X) {
+                            rehacer();
+                        }
+                        else if (e.key.code == sf::Keyboard::T) {
+                            gestorPuntajes.alternarOrdenamiento();
+                        }
+                        else if (e.key.code == sf::Keyboard::R) {
+                            reiniciarPartida();
+                        }
                     }
                 }
             }
         }
 
         if (estado == ESTADO_JUGANDO && !juegoTerminado && !pausado) {
-            acumulado += delta;
-            tiempoPartida += delta;
-            int tipoEvento = 0;
-            while (colaEventos.despachar(tiempoPartida, tipoEvento)) {
-                procesarEvento(tipoEvento);
+            if (animandoLineas) {
+                tiempoAnimacionLineas += delta;
+                if (tiempoAnimacionLineas >= 0.20f) {
+                    animandoLineas = false;
+                    Pieza dummy;
+                    dummy.setPosicion(-10, -10);
+                    tablero.fijar(dummy);
+
+                    puntaje += PUNTOS_LINEA[lineasAnimacion - 1];
+                    lineasTotales += lineasAnimacion;
+                    actualizarNivel();
+
+                    for (int f = 0; f < ROWS; ++f) {
+                        filasAnimacion[f] = false;
+                    }
+
+                    generarPieza();
+                    registrarMovimiento(MOV_FIJAR);
+                }
             }
-            if (acumulado >= intervaloCaida) {
-                acumulado = 0.0f;
-                bajarPieza();
-                registrarMovimiento(MOV_BAJAR);
+            else {
+                acumulado += delta;
+                tiempoPartida += delta;
+                int tipoEvento = 0;
+                while (colaEventos.despachar(tiempoPartida, tipoEvento)) {
+                    procesarEvento(tipoEvento);
+                }
+                if (acumulado >= intervaloCaida) {
+                    acumulado = 0.0f;
+                    bajarPieza();
+                    if (!animandoLineas) {
+                        registrarMovimiento(MOV_BAJAR);
+                    }
+                }
             }
         }
         else if (estado == ESTADO_JUGANDO && juegoTerminado && autoReplay) {
@@ -245,6 +303,9 @@ void Ventana::ejecutar() {
             if (juegoTerminado) {
                 dibujarFin(ventana);
             }
+            else if (pausado) {
+                dibujarMenuPausa(ventana);
+            }
         }
         ventana.display();
     }
@@ -267,6 +328,9 @@ void Ventana::rotarPieza() {
 }
 
 void Ventana::bajarPieza() {
+    if (animandoLineas) {
+        return;
+    }
     piezaActual.mover(1, 0);
     if (!tablero.puedeColocar(piezaActual)) {
         piezaActual.mover(-1, 0);
@@ -275,6 +339,9 @@ void Ventana::bajarPieza() {
 }
 
 void Ventana::caidaRapida() {
+    if (animandoLineas) {
+        return;
+    }
     int distancia = 0;
     while (tablero.puedeColocar(piezaActual)) {
         piezaActual.mover(1, 0);
@@ -289,13 +356,39 @@ void Ventana::caidaRapida() {
 }
 
 void Ventana::fijarPieza() {
-    int lineas = tablero.fijar(piezaActual);
-    if (lineas > 0) {
-        puntaje += PUNTOS_LINEA[lineas - 1];
-        lineasTotales += lineas;
-        actualizarNivel();
+    const Coord* cs = piezaActual.getCeldas();
+    for (int i = 0; i < 4; ++i) {
+        if (tablero.estaDentro(cs[i].row, cs[i].col)) {
+            tablero.setCelda(cs[i].row, cs[i].col, piezaActual.getTipo());
+        }
     }
-    generarPieza();
+
+    int completas = 0;
+    for (int f = 0; f < ROWS; ++f) {
+        bool llena = true;
+        for (int c = 0; c < COLS; ++c) {
+            if (tablero.getCelda(f, c) == EMPTY_CELL) {
+                llena = false;
+                break;
+            }
+        }
+        if (llena) {
+            filasAnimacion[f] = true;
+            completas++;
+        }
+        else {
+            filasAnimacion[f] = false;
+        }
+    }
+
+    if (completas > 0) {
+        animandoLineas = true;
+        tiempoAnimacionLineas = 0.0f;
+        lineasAnimacion = completas;
+    }
+    else {
+        generarPieza();
+    }
 }
 
 void Ventana::generarPieza() {
@@ -308,7 +401,7 @@ void Ventana::generarPieza() {
 }
 
 void Ventana::usarHold() {
-    if (swapUsado) {
+    if (swapUsado || animandoLineas) {
         return;
     }
     if (pilaHold.isEmpty()) {
@@ -462,6 +555,13 @@ void Ventana::reiniciarPartida() {
     mostrarModalFin = true;
     autoReplay = false;
     tiempoAutoReplay = 0.0f;
+    animandoLineas = false;
+    tiempoAnimacionLineas = 0.0f;
+    lineasAnimacion = 0;
+    opcionPausa = 0;
+    for (int f = 0; f < ROWS; ++f) {
+        filasAnimacion[f] = false;
+    }
 
     colaEventos.programar(EVENTO_VELOCIDAD, INTERVALO_VELOCIDAD, 0.0f);
     colaEventos.programar(EVENTO_BONUS, INTERVALO_BONUS, 0.0f);
@@ -567,6 +667,20 @@ void Ventana::dibujarTablero(sf::RenderWindow& ventana) {
             }
         }
     }
+
+    if (animandoLineas) {
+        bool destelloBlanco = (static_cast<int>(tiempoAnimacionLineas * 24.0f) % 2 == 0);
+        sf::Color colorFlash = destelloBlanco ? sf::Color(255, 255, 255, 245)
+                                              : sf::Color(180, 230, 255, 230);
+        for (int f = 0; f < ROWS; ++f) {
+            if (filasAnimacion[f]) {
+                sf::RectangleShape brillo(sf::Vector2f(COLS * CELL_SIZE, CELL_SIZE - 2.0f));
+                brillo.setFillColor(colorFlash);
+                brillo.setPosition(BOARD_OFFSET_X, BOARD_OFFSET_Y + f * CELL_SIZE + 1.0f);
+                ventana.draw(brillo);
+            }
+        }
+    }
 }
 
 void Ventana::dibujarPieza(sf::RenderWindow& ventana) {
@@ -581,7 +695,7 @@ void Ventana::dibujarPieza(sf::RenderWindow& ventana) {
             dibujarCelda(ventana, cs[i].row, cs[i].col, p.getTipo());
         }
     }
-    else if (!juegoTerminado) {
+    else if (!juegoTerminado && !animandoLineas) {
         const Coord* cs = piezaActual.getCeldas();
         for (int i = 0; i < 4; i++) {
             dibujarCelda(ventana, cs[i].row, cs[i].col, piezaActual.getTipo());
@@ -698,15 +812,10 @@ void Ventana::dibujarHud(sf::RenderWindow& ventana) {
     if (!enReplay) {
         dibujarTexto(ventana, "METODO ORDEN: " + to_string(gestorPuntajes.getMetodo() + 1),
                      TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y - 26.0f, TEXTO_CONTROLES_TAMANO, sf::Color(180, 200, 220));
-        dibujarTexto(ventana, "C HOLD   Z DESHACER   X REHACER   P PAUSA",
+        dibujarTexto(ventana, "C HOLD   Z DESHACER   X REHACER   ESC PAUSA",
                      TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y, TEXTO_CONTROLES_TAMANO, sf::Color(160, 160, 160));
         dibujarTexto(ventana, "T ORDEN   R REINICIAR",
                      TEXTO_CONTROLES_X, TEXTO_CONTROLES_Y + 24.0f, TEXTO_CONTROLES_TAMANO, sf::Color(160, 160, 160));
-    }
-
-    if (pausado && !juegoTerminado) {
-        dibujarTexto(ventana, "PAUSA", BOARD_OFFSET_X + COLS * CELL_SIZE / 2.0f,
-                     BOARD_OFFSET_Y + ROWS * CELL_SIZE / 2.0f, TEXTO_TAMANO + 8.0f, sf::Color::White);
     }
 }
 
@@ -835,3 +944,59 @@ void Ventana::dibujarFin(sf::RenderWindow& ventana) {
                      TEXTO_ETIQUETA_TAMANO - 3.0f, sf::Color::White);
     }
 }
+
+void Ventana::dibujarMenuPausa(sf::RenderWindow& ventana) {
+    sf::RectangleShape velo(sf::Vector2f(static_cast<float>(ventana.getSize().x),
+                                         static_cast<float>(ventana.getSize().y)));
+    velo.setFillColor(sf::Color(0, 0, 0, 180));
+    ventana.draw(velo);
+
+    float anchoModal = 400.0f;
+    float altoModal = 330.0f;
+    float modalX = (static_cast<float>(ventana.getSize().x) - anchoModal) / 2.0f;
+    float modalY = (static_cast<float>(ventana.getSize().y) - altoModal) / 2.0f;
+    float cx = static_cast<float>(ventana.getSize().x) / 2.0f;
+
+    sf::RectangleShape panel(sf::Vector2f(anchoModal, altoModal));
+    panel.setFillColor(sf::Color(22, 22, 34, 245));
+    panel.setOutlineThickness(2.0f);
+    panel.setOutlineColor(sf::Color(255, 220, 100, 220));
+    panel.setPosition(modalX, modalY);
+    ventana.draw(panel);
+
+    dibujarTexto(ventana, "PAUSA", cx, modalY + 42.0f,
+                 TEXTO_TAMANO + 6.0f, sf::Color(255, 220, 100));
+    dibujarTexto(ventana, "PARTIDA PAUSADA", cx, modalY + 80.0f,
+                 TEXTO_ETIQUETA_TAMANO, sf::Color(180, 200, 220));
+
+    const string opciones[4] = {
+        "CONTINUAR",
+        "REINICIAR PARTIDA",
+        "SALIR AL MENU PRINCIPAL",
+        "SALIR DEL JUEGO"
+    };
+
+    float inicioY = modalY + 124.0f;
+    for (int i = 0; i < 4; ++i) {
+        float yOpcion = inicioY + i * 40.0f;
+        if (i == opcionPausa) {
+            sf::RectangleShape sel(sf::Vector2f(anchoModal - 48.0f, 32.0f));
+            sel.setFillColor(sf::Color(255, 220, 100, 40));
+            sel.setOutlineThickness(1.0f);
+            sel.setOutlineColor(sf::Color(255, 220, 100, 190));
+            sel.setPosition(modalX + 24.0f, yOpcion - 16.0f);
+            ventana.draw(sel);
+
+            dibujarTexto(ventana, ">> " + opciones[i] + " <<", cx, yOpcion,
+                         TEXTO_ETIQUETA_TAMANO + 1.0f, sf::Color(255, 220, 100));
+        }
+        else {
+            dibujarTexto(ventana, opciones[i], cx, yOpcion,
+                         TEXTO_ETIQUETA_TAMANO, sf::Color(200, 200, 200));
+        }
+    }
+
+    dibujarTexto(ventana, "ARRIBA / ABAJO: ELEGIR   ENTER: CONFIRMAR   ESC: VOLVER",
+                 cx, modalY + altoModal - 20.0f, 11.0f, sf::Color(160, 160, 175));
+}
+

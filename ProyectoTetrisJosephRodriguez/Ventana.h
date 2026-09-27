@@ -48,6 +48,11 @@ private:
     int lineasTotales;
     int rotaciones;
     int rotacionesHold;
+    bool animandoLineas;
+    float tiempoAnimacionLineas;
+    bool filasAnimacion[ROWS];
+    int lineasAnimacion;
+    int opcionPausa;
     void bajarPieza();
     void fijarPieza();
     void generarPieza();
@@ -76,5 +81,6 @@ private:
     void dibujarHold(sf::RenderWindow& w);
     void dibujarHud(sf::RenderWindow& w);
     void dibujarMenu(sf::RenderWindow& w);
+    void dibujarMenuPausa(sf::RenderWindow& w);
     void dibujarFin(sf::RenderWindow& w);
 };
